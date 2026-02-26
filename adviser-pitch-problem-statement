@@ -1,0 +1,48 @@
+# Adviser Pitch (5-Minute Version)
+
+---
+
+## The Problem (1 minute)
+
+Most fixed-camera illegal parking detection systems follow the same logic: detect a vehicle, track it, check if it is in a restricted zone, and if it stays longer than 60 seconds, flag it as a violation. The problem is this logic evaluates each vehicle alone. It does not check what surrounding traffic is doing. So when vehicles stop for a red light or congestion, every vehicle in the zone gets flagged.
+
+---
+
+## The Evidence (1 minute)
+
+Three independent fixed-camera studies ran into this exact problem:
+
+- Gao et al. (2022) said "differentiating between vehicles stopped for red lights and those illegally parked" was a challenge. They built a workaround using pedestrian crosswalk activity because the traffic signal was not visible in their footage.
+
+- Wahyono et al. (2017) said their system gets "false regions due to a traffic jam, stopped vehicles and standing human at the traffic light intersection." They used a 60-second timer as a filter.
+
+- Kathait et al. (2025) said "vehicles which are at stop due to red or yellow traffic signal are also considered." They proposed checking signal color but could not implement it because their dataset had no visible signals.
+
+Each fix depends on something specific being visible in the scene. Crosswalks, signals, or just a longer timer. None of them check whether surrounding vehicles are also stopped.
+
+---
+
+## What We Propose (1 minute)
+
+We add one check after the existing pipeline: before confirming a violation, compute what percentage of all tracked vehicles in the frame are currently stationary. We call this the stationary ratio.
+
+- If most vehicles are stopped, suppress the flag. The vehicle is probably in traffic.
+- If traffic clears but this vehicle stays, confirm the violation. It did not leave with everyone else.
+- If this vehicle is stopped alone while others move, confirm with high confidence. It is an anomaly.
+
+This uses displacement data the tracker already computes. No extra sensors, no need to see crosswalks or signals.
+
+---
+
+## How We Test It (1 minute)
+
+We build two systems ourselves. Same YOLOv8 detector, same DeepSORT tracker, same zone, same 60-second threshold. The only difference is our context-aware layer. We run both on the same footage with the same ground truth annotations and compare precision, recall, and false positive sources.
+
+---
+
+## Why This Is a Valid Thesis (1 minute)
+
+- The problem is real. Three independent papers built workarounds for it.
+- No one has formally measured before-and-after. We will be the first.
+- The approach is generalizable. It works anywhere there are multiple vehicles, unlike existing fixes that need specific scene elements.
+- If it works, we improved violation detection. If it does not, that is still a valid finding because no one tested this before.
