@@ -1,101 +1,70 @@
-I now have the full context from the other chat. Let me provide the final Chapter 3 structure properly framed as a proposal.
 
----
 
-# Chapter 3: Methodology — Complete Writing Guide
+# Chapter 3: Methodology — Complete Writing Guide (Final)
 
 ---
 
 ## 3.1 — Conceptual Framework
 
----
+**What this section is about:** Bridges Chapter 2 to the proposed study and presents the system design.
 
-### 3.1.1 — Problem-to-Solution Mapping
+**What to write:**
 
-**How to write it:**
-
-One paragraph connecting Chapter 2 findings to what this study proposes. Do not re-argue Chapter 2. Just bridge.
-
-> "Chapter 2 established that the dominant violation decision logic in fixed-camera illegal parking detection evaluates candidate vehicles independently using zone membership and temporal thresholds. Section 2.6.4 documented that three independent fixed-camera studies encountered false detections from non-parking stationary vehicles — those stopped at traffic signals, in congestion, or at intersections. Each study developed scene-specific responses: Gao et al. (2022) built a pedestrian zone proxy requiring visible crosswalks, Wahyono et al. (2017) applied temporal filtering that cannot distinguish prolonged congestion from parking, and Kathait et al. (2025) described signal color detection requiring visible signal heads. All existing responses evaluate the candidate vehicle against fixed external references. None examines whether surrounding tracked vehicles are also stationary."
-
-> "This study proposes a context-aware decision logic layer that assesses surrounding vehicle displacement — data already produced by standard tracking modules — before confirming a violation."
+**Opening paragraph (no subsection — just the section opener):**
+One paragraph connecting Chapter 2 to this study. Reference Section 2.6.4 and the three fixed-camera studies (Gao 2022, Wahyono 2017, Kathait 2025). State the gap: all existing responses evaluate the candidate in isolation against fixed external references; none uses surrounding vehicle behavior. State that this study proposes a context-aware decision logic layer using surrounding vehicle displacement data.
 
 ---
 
-### 3.1.2 — System Architecture Overview
+### 3.1.1 — System Architecture Overview
 
-**How to write it:**
+**What this section is about:** Presents the full system design as a proper diagram.
 
-Present the conceptual diagram. This is the single most important visual in the proposal. Show baseline and proposed pipelines.
+**What to write:**
 
-**Baseline Pipeline Diagram:**
+**Figure 1 — System Architecture Diagram**
 
-```
-Fixed Camera Video
-       ↓
-Vehicle Detection (YOLOv8)
-       ↓
-Vehicle Tracking (DeepSORT)
-       ↓
-Zone Membership Check
-(Is centroid inside restricted zone?)
-       ↓
-Temporal Threshold Check
-(Stationary > 60 seconds?)
-       ↓
-OUTPUT: Violation / Non-Violation
-```
+This must be a proper technical diagram (made in draw.io, Figma, or similar), not a simple flowchart. It should show **both the baseline path and the proposed path side by side or as a branching diagram**. The figure must contain:
 
-**Proposed Pipeline Diagram:**
+| Component | What to show in the diagram |
+|---|---|
+| Input | Fixed camera video frame |
+| Detection stage | Box labeled with "YOLOv8 (n / s / m)" — show the output: bounding boxes with class labels and confidence scores |
+| Tracking stage | Box labeled with "Tracker (DeepSORT / ByteTrack / BoT-SORT)" — show the output: tracked bounding boxes with persistent track IDs and centroids |
+| Zone membership check | Box showing centroid tested against zone polygon — output: in-zone / out-of-zone status per track |
+| Temporal threshold check | Box showing stationarity timer — output: candidate violation flag when timer exceeds T |
+| **Branch point** | Baseline path goes straight to output. Proposed path enters the context-aware layer. |
+| Context-aware layer (proposed only) | Enlarged box or bordered region showing: (1) displacement computation for all vehicles, (2) stationary ratio R, (3) Check 1 / Check 2 / Check 3 logic, (4) confirm or suppress decision |
+| Baseline output | Violation / Non-violation |
+| Proposed output | Violation Confirmed / Suppressed + Traffic State Label + Confidence |
 
-```
-Fixed Camera Video
-       ↓
-Vehicle Detection (YOLOv8)
-       ↓
-Vehicle Tracking (DeepSORT)
-       ↓
-Zone Membership Check
-       ↓
-Temporal Threshold Check
-       ↓
-Context-Aware Decision Logic Layer
-       ↓
-┌─────────────────────────────────────────┐
-│  Surrounding Vehicle State Assessment   │
-│                                         │
-│  1. Compute displacement of ALL         │
-│     tracked vehicles                    │
-│                                         │
-│  2. Compute stationary ratio            │
-│     (proportion currently stopped)      │
-│                                         │
-│  3. Compare candidate behavior against  │
-│     surrounding traffic behavior        │
-│                                         │
-│  4. Confirm or suppress violation flag  │
-│     based on comparison                 │
-└─────────────────────────────────────────┘
-       ↓
-OUTPUT: Violation Confirmed / Suppressed
-        + Traffic State Label
-```
+**Notes for groupmates:**
+- The detection and tracking boxes should be visually marked as **variable** (e.g., dashed border, or a label saying "swappable").
+- The context-aware layer box should be visually marked as the **contribution** (e.g., highlighted border, different color).
+- Show the **data type** flowing between each component along the arrows (frames → bounding boxes → tracked centroids → displacement values → decision).
+- This is probably a full-page figure.
 
-Below the diagrams, explain in plain terms:
+After the figure, write one paragraph describing the baseline path and one paragraph describing the proposed path. Keep it short — the figure does the heavy lifting.
 
-> "The baseline system will flag any vehicle that exceeds the time threshold in the restricted zone regardless of surrounding traffic behavior. The proposed system will add one step: before confirming the violation, it will check whether other tracked vehicles in the scene are also stationary. If they are, the candidate's stationarity is likely part of a collective traffic event. If the candidate is the only stationary vehicle while others move, the behavior is consistent with individual parking."
+Write one paragraph stating the factorial design:
+
+| Factor | Levels | Role |
+|---|---|---|
+| Detection-tracking pipeline | 9 combinations (3 detectors × 3 trackers) | Upstream variable |
+| Context-aware layer | ON or OFF | Treatment variable (contribution) |
+
+State that both configurations process the same video with the same zone and threshold. The only variable within each pipeline pair is the context layer.
 
 ---
 
-### 3.1.3 — Contribution Positioning
+### 3.1.2 — Contribution Positioning
 
-**How to write it:**
+**What this section is about:** Maps the proposed approach against existing approaches from Chapter 2.
 
-Map the proposed contribution against Chapter 2 findings.
+**What to write:**
 
-> "The proposed layer addresses the challenge documented in Section 2.6.4 through a different mechanism than existing approaches."
+One sentence introducing the table: the proposed layer addresses the challenge documented in Section 2.6.4 through a different mechanism than existing approaches.
 
-Present a comparison table:
+**Table — Comparison with existing approaches:**
 
 | Existing Approach | What It Requires | What It Covers | What It Does Not Cover |
 |---|---|---|---|
@@ -104,103 +73,70 @@ Present a comparison table:
 | Signal color detection (Kathait et al., 2025) | Visible traffic signal head | Signal-related stops where signal is visible | Locations without visible signals, congestion, queue spillback |
 | **Proposed: Surrounding vehicle displacement** | Tracking output already produced | Any collective stopping regardless of cause | — |
 
-> "The proposed approach will use displacement data that the tracking module already computes for every tracked vehicle in every frame. It requires no additional detection modules, no scene-specific calibration beyond the standard zone polygon, and no external data sources."
+One paragraph after the table stating the proposed approach uses data the tracking module already produces. No additional models, calibration, or external data.
 
----
-
-### 3.1.4 — Controlled Comparison Design
-
-**How to write it:**
-
-State what is shared and what differs between configurations.
-
-> "Both system configurations will use identical detection and tracking components. The same YOLOv8 weights, DeepSORT parameters, zone polygon definition, and temporal threshold will be applied to both. The only variable will be the presence or absence of the context-aware decision logic layer. This controlled design ensures that any observed performance difference is attributable to the decision logic, not to detection or tracking variations."
-
-**Length for all of 3.1:** 2.5-3 pages including diagrams and table.
+**Length for all of 3.1:** 3–3.5 pages.
 
 ---
 
 ## 3.2 — Data Collection and Preparation
 
+**What this section is about:** Describes the video data and how it will be prepared.
+
 ---
 
 ### 3.2.1 — Dataset Requirements
 
-**How to write it:**
+**What this section is about:** Lists the properties the footage must have.
 
-State what properties the video footage must have and why each is necessary.
+**What to write:**
 
-> "The evaluation will require fixed-camera video footage satisfying the following conditions."
+Five requirements, each one to two sentences:
 
-**Requirement 1 — Static camera position:**
-
-> "The camera must be mounted at a fixed position with a static viewing angle throughout the recording duration. The camera view must include a roadway segment containing a designated restricted parking zone. This ensures consistent spatial reference across all frames and enables a single zone polygon definition to apply throughout."
-
-**Requirement 2 — Mixed traffic scenarios:**
-
-> "The footage must capture three types of scenarios within the same recording session:"
+1. **Static camera position** — fixed mount, static angle, restricted zone visible throughout.
+2. **Mixed traffic scenarios** — must contain all three:
 
 | Scenario Type | What It Contains | Why It Is Needed |
 |---|---|---|
-| Free-flowing traffic | Vehicles passing through zone without stopping | Confirms both systems correctly produce no violations when no vehicles are parked |
-| Collective stops | Multiple vehicles stationary simultaneously (red light, congestion) | Tests whether proposed system suppresses false positives that baseline produces |
-| Genuine violations | Vehicles actually parked illegally in the zone | Confirms proposed system retains detection of real violations |
+| Free-flowing traffic | Vehicles passing through zone without stopping | Verifies no false triggers during normal flow |
+| Collective stops | Multiple vehicles stationary simultaneously | Tests the context-aware layer's suppression logic |
+| Genuine violations | Vehicles actually parked illegally in the zone | Verifies genuine violations are still detected |
 
-> "The presence of all three scenarios is essential. The baseline system is expected to handle free-flowing traffic and genuine violations correctly but produce false positives during collective stops. The proposed system is expected to suppress false positives during collective stops while retaining detection of genuine violations."
-
-**Requirement 3 — Observable traffic signal effects:**
-
-> "A signalized intersection must be visible or its effects observable within the camera frame. Vehicles stopping at red lights and resuming at green lights provide the primary test case for the context-aware layer. This scenario produces the clearest contrast between collective stationarity (all vehicles stopped at red) and individual parking (one vehicle remains while others depart at green)."
-
-**Requirement 4 — Multiple simultaneous vehicles:**
-
-> "The camera view must regularly contain multiple vehicles simultaneously. The stationary ratio computation requires observing surrounding vehicles. Footage showing only one vehicle at a time would render the surrounding vehicle check meaningless."
-
-**Requirement 5 — Visible zone boundaries:**
-
-> "Lane boundaries, curb edges, or road markings must be visible in the footage to enable accurate definition of the restricted zone polygon."
+3. **Observable traffic signal effects** — signalized intersection visible or its effects observable.
+4. **Multiple simultaneous vehicles** — stationary ratio requires more than one tracked vehicle.
+5. **Visible zone boundaries** — lane markings or curb edges visible for polygon definition.
 
 ---
 
 ### 3.2.2 — Data Source
 
-**How to write it:**
+**What this section is about:** States where the footage comes from.
 
-State where the footage will come from. Choose the appropriate framing based on your actual plan.
+**What to write:**
 
-**If recording original footage:**
+Use whichever template applies:
 
-> "Video footage will be recorded at [specific location description] using a fixed camera mounted at approximately [height] meters above ground level. The camera will capture [resolution] video at [frame rate] frames per second."
+**If recording original footage:** State location, camera specs (height, resolution, frame rate), why this site satisfies requirements, and recording schedule:
 
-> "The recording site was selected because it satisfies all stated requirements: it contains a designated no-parking zone adjacent to a signalized intersection, ensuring that both genuine violations and signal-related stops will occur within the same camera frame. The intersection experiences regular traffic signal cycles and varying traffic density throughout the day."
+| Time Period | Purpose |
+|---|---|
+| Morning (7:00–9:00) | Moderate to heavy traffic with signal cycles |
+| Midday (11:00–13:00) | Light to moderate traffic |
+| Afternoon (16:00–18:00) | Heavy traffic, potential congestion |
 
-> "Recording will be conducted across multiple time periods:"
-
-| Time Period | Expected Traffic Condition | Purpose |
-|---|---|---|
-| Morning (7:00-9:00) | Moderate to heavy, frequent signal stops | Capture collective stop scenarios |
-| Midday (11:00-13:00) | Light to moderate | Capture free-flow and isolated violation scenarios |
-| Afternoon (16:00-18:00) | Heavy, potential congestion | Capture congestion scenarios |
-
-**If using existing public footage:**
-
-> "Video footage will be obtained from [specific source — name dataset, repository, or URL]. The selected footage was verified to meet all requirements stated in Section 3.2.1: fixed camera angle, restricted zone visible, signalized intersection effects observable, multiple vehicles present simultaneously, and varying traffic conditions across the recording duration."
-
-> "The footage contains approximately [duration] of continuous recording from a single camera position, including [describe what traffic scenarios are present]."
+**If using existing footage:** State source, confirm it meets all five requirements, state duration and scenarios present.
 
 ---
 
 ### 3.2.3 — Ground Truth Annotation Protocol
 
-**How to write it:**
+**What this section is about:** Defines how events are labeled for evaluation.
 
-Define exactly how events will be identified and labeled.
+**What to write:**
 
-**Event definition:**
+**Event definition:** One sentence — a stationary vehicle event is a continuous period where a tracked vehicle remains within the restricted zone with displacement below the movement threshold.
 
-> "A stationary vehicle event is defined as a continuous period during which a tracked vehicle remains within the restricted zone with displacement below a movement threshold. An event begins when the vehicle first becomes stationary in the zone and ends when the vehicle departs the zone or resumes movement."
-
-**Annotation labels:**
+**Table — Annotation labels:**
 
 | Label | Data Type | Values | Description |
 |---|---|---|---|
@@ -214,36 +150,22 @@ Define exactly how events will be identified and labeled.
 | Stop reason | Categorical | Red light, congestion, loading, yielding, other, N/A | Why vehicle is legitimately stopped (if non-violation) |
 | Surrounding traffic state | Categorical | Flowing, mixed, collectively stopped | Annotator assessment of surrounding vehicle behavior |
 
-**Annotation procedure:**
+**Annotation procedure:** Bullet list — annotator observes candidate behavior, surrounding traffic, contextual cues. One paragraph on how ground truth status is assigned.
 
-> "Each event will be annotated by reviewing the video segment containing the event. The annotator will observe:"
-> - The candidate vehicle's behavior (when it stopped, how long it remained, when/if it departed)
-> - The surrounding traffic behavior (are other vehicles also stopped, are they moving)
-> - Any visible contextual cues (traffic signal state if visible, pedestrian activity, queue formation)
-
-> "Based on these observations, the annotator will assign the ground truth status. Events where the vehicle is clearly waiting in traffic with surrounding vehicles also stopped will be labeled as non-violations with the corresponding stop reason. Events where the vehicle remains stationary while surrounding traffic flows, in a manner consistent with parking, will be labeled as violations."
-
-**Inter-annotator reliability:**
-
-> "A minimum of 20% of annotated events will be independently labeled by a second annotator. Inter-annotator agreement will be measured using Cohen's kappa coefficient. Events with disagreement will be resolved through joint review of the video segment by both annotators."
+**Inter-annotator reliability:** 20% independently labeled by second annotator. Cohen's kappa. Disagreements resolved by joint review.
 
 ---
 
 ### 3.2.4 — Video Preprocessing
 
-**How to write it:**
+**What this section is about:** Technical preparation before experiments.
 
-Describe technical preparation steps that will be performed before running experiments.
+**What to write:**
 
-**Frame extraction:**
+Three steps:
 
-> "Video will be processed at [X] frames per second. If the source video frame rate exceeds 30 fps, frames will be sampled at 10 fps to reduce computational load while retaining sufficient temporal resolution for displacement computation. The selected frame rate will be held constant across all experimental configurations."
-
-**Zone polygon definition:**
-
-> "The restricted zone will be defined by selecting vertex coordinates on a reference frame from the video. The polygon will be drawn to match the physical boundaries of the no-parking zone as visible from the camera angle. Vertex coordinates will be recorded and the same polygon definition will be applied to both baseline and proposed system configurations."
-
-Present an example zone definition table:
+1. **Frame extraction** — processing frame rate (e.g., 10 fps), held constant across all configurations.
+2. **Zone polygon definition** — vertex coordinates selected on reference frame, same polygon for all configurations.
 
 | Vertex | X Coordinate | Y Coordinate |
 |---|---|---|
@@ -252,29 +174,37 @@ Present an example zone definition table:
 | V3 | [value] | [value] |
 | V4 | [value] | [value] |
 
-**Detection and tracking parameters:**
+3. **Detection and tracking parameters** — determined through preliminary testing, held constant across all runs.
 
-> "YOLOv8 detection confidence threshold, non-maximum suppression threshold, and class filter settings will be determined through preliminary testing on a small sample of the footage. DeepSORT matching thresholds, maximum age, and minimum hits parameters will similarly be set through preliminary testing. Once set, these parameters will be held constant across all experimental configurations and will not be modified during evaluation."
-
-**Length for all of 3.2:** 4-5 pages including tables.
+**Length for all of 3.2:** 4–5 pages.
 
 ---
 
-## 3.3 — Baseline System Architecture
+## 3.3 — System Architecture
+
+**What this section is about:** Describes every component of the pipeline from input to baseline output.
 
 ---
 
 ### 3.3.1 — Vehicle Detection Module
 
-**How to write it:**
+**What this section is about:** Describes the three detector variants.
 
-Describe what the detection module will do.
+**What to write:**
 
-> "Vehicles will be detected frame-by-frame using YOLOv8 pretrained on the COCO dataset. The detector will output bounding box coordinates (x, y, width, height), class label, and confidence score for each detected object."
+State three YOLOv8 variants will be used. Same architecture family, differ only in model capacity. All pretrained on COCO, no fine-tuning. Same class filter and confidence threshold across all three.
 
-**Detection filtering:**
+**Table — Detector specifications:**
 
-> "Only detections belonging to vehicle classes will be retained:"
+| Variant | Parameters | GFLOPs | COCO mAP50-95 |
+|---|---|---|---|
+| YOLOv8n (Nano) | 3.2M | 8.7 | 37.3 |
+| YOLOv8s (Small) | 11.2M | 28.6 | 44.9 |
+| YOLOv8m (Medium) | 25.9M | 78.9 | 50.2 |
+
+One sentence noting these are Ultralytics benchmark values; actual performance on evaluation footage may differ.
+
+**Table — Detection class filter:**
 
 | COCO Class ID | Class Name | Included |
 |---|---|---|
@@ -284,340 +214,264 @@ Describe what the detection module will do.
 | 7 | Truck | Yes |
 | Other | — | No |
 
-> "Detections with confidence scores below the threshold (to be determined in preliminary testing, expected range 0.4-0.6) will be discarded."
+One paragraph on why within-family variants instead of cross-generation models: isolates model capacity as the single variable without confounding architectural differences.
 
-**Detection output:**
-
-> "For each frame, the detection module will output a list of detections, each containing bounding box coordinates, class label, and confidence score. This output will be passed to the tracking module."
+One sentence on detection output: bounding box coordinates, class label, confidence score per detection per frame, passed to tracking module.
 
 ---
 
 ### 3.3.2 — Vehicle Tracking Module
 
-**How to write it:**
+**What this section is about:** Describes the three tracker variants.
 
-Describe what the tracking module will do.
+**What to write:**
 
-> "Detected vehicles will be tracked across frames using DeepSORT. The tracker will assign a persistent unique identifier (track ID) to each vehicle and maintain identity across consecutive frames using a combination of Kalman Filter motion prediction and deep appearance feature matching."
+State three trackers will be used, each representing a different tracking approach. For each, write 2–3 sentences on how it works and a properties table.
 
-**Tracking output:**
+**DeepSORT** — Kalman Filter motion prediction + deep ReID appearance matching.
 
-> "For each tracked vehicle in each frame, the tracking module will output:"
+| Property | Detail |
+|---|---|
+| Association method | Hungarian algorithm on combined motion + appearance cost |
+| Motion model | Kalman Filter |
+| Appearance model | Deep ReID network (128-dimensional feature vector) |
+| Occlusion handling | Track maintained for max_age frames without detection |
+| Literature use | Sharma et al. (2023), Kathait et al. (2025) |
+
+**ByteTrack** — Motion-only, two-stage association (high-confidence first, then low-confidence).
+
+| Property | Detail |
+|---|---|
+| Association method | IoU-based matching in two stages |
+| Motion model | Kalman Filter |
+| Appearance model | None |
+| Occlusion handling | Low-confidence second pass recovers partially occluded vehicles |
+| Literature use | Widely adopted in MOT benchmarks; integrated in Ultralytics |
+
+**BoT-SORT** — Kalman + ReID + camera motion compensation via sparse optical flow.
+
+| Property | Detail |
+|---|---|
+| Association method | Combined motion + appearance + camera motion compensation |
+| Motion model | Kalman Filter with camera motion correction |
+| Appearance model | ReID network |
+| Occlusion handling | Appearance re-identification + motion correction |
+| Literature use | Kuo et al. (dashcam); top MOT benchmark performer |
+
+One paragraph on why these three: they span motion-only → appearance-assisted → state-of-the-art combined.
+
+One paragraph on why tracker choice matters for the context-aware layer: the layer depends on displacement from tracked centroids; tracker stability directly affects stationary ratio reliability.
+
+**Table — Tracking output (same for all three):**
 
 | Output | Data Type | Description |
 |---|---|---|
-| Track ID | Integer | Persistent identifier for this vehicle |
-| Bounding box | (x, y, w, h) | Current bounding box coordinates |
-| Centroid | (cx, cy) | Center point of bounding box |
-| Track age | Integer | Number of frames this track has existed |
+| Track ID | Integer | Persistent identifier |
+| Bounding box | (x, y, w, h) | Current bounding box |
+| Centroid | (cx, cy) | Center of bounding box |
+| Track age | Integer | Frames this track has existed |
 | Track state | Categorical | Confirmed, tentative, or deleted |
 
-> "Only confirmed tracks will be passed to subsequent processing stages."
+---
+
+### 3.3.3 — Pipeline Combinations
+
+**What this section is about:** Defines the nine detector-tracker pipelines.
+
+**What to write:**
+
+**Table — Pipeline matrix:**
+
+| Pipeline ID | Detector | Tracker |
+|---|---|---|
+| P1 | YOLOv8n | DeepSORT |
+| P2 | YOLOv8n | ByteTrack |
+| P3 | YOLOv8n | BoT-SORT |
+| P4 | YOLOv8s | DeepSORT |
+| P5 | YOLOv8s | ByteTrack |
+| P6 | YOLOv8s | BoT-SORT |
+| P7 | YOLOv8m | DeepSORT |
+| P8 | YOLOv8m | ByteTrack |
+| P9 | YOLOv8m | BoT-SORT |
+
+One paragraph: all pipelines share identical settings for everything else (input video, frame rate, class filter, confidence threshold, zone polygon, temporal threshold). Each tested with and without the context-aware layer = 18 total configurations.
 
 ---
 
-### 3.3.3 — Zone Membership Check
+### 3.3.4 — Baseline Decision Logic
 
-**How to write it:**
+**What this section is about:** Describes zone check, temporal threshold, and baseline output as one unit.
 
-> "For each confirmed track in each frame, the system will test whether the bounding box centroid falls within the predefined restricted zone polygon."
+**What to write:**
 
-> "A standard point-in-polygon algorithm (ray casting) will be used. The test returns a binary result: inside or outside. Vehicles whose centroids are outside the polygon will be excluded from violation analysis for that frame."
+**Zone membership check:** Point-in-polygon (ray casting) on bounding box centroid against zone polygon. Binary: inside or outside. Status recorded per frame per track.
 
-> "The zone membership status of each tracked vehicle will be recorded per frame, enabling computation of how long each vehicle has been continuously inside the zone."
+**Temporal threshold check:** Stationarity timer begins when centroid enters zone AND displacement falls below threshold. Increments while both hold. Resets if vehicle exits or moves. Candidate violation flagged when timer exceeds T = 60 seconds. Cite the five Chapter 2 studies using this value.
 
----
+**Baseline decision output:** Binary per event. Any vehicle exceeding T in the zone is flagged. No surrounding traffic information.
 
-### 3.3.4 — Temporal Threshold Check
-
-**How to write it:**
-
-> "For each tracked vehicle, a stationarity timer will track how long the vehicle has been continuously stationary within the restricted zone."
-
-**Timer logic:**
-
-> "The timer will begin when a tracked vehicle's centroid first enters the restricted zone AND the vehicle's frame-to-frame displacement falls below a movement threshold. The timer will increment each frame while both conditions remain true. The timer will reset to zero if the vehicle exits the zone or if displacement exceeds the movement threshold (indicating the vehicle moved)."
-
-**Violation threshold:**
-
-> "If the timer exceeds T = 60 seconds, the vehicle will be classified as a candidate violation. This threshold value is adopted from the majority of fixed-camera studies reviewed in Chapter 2, including Wahyono et al. (2017), Wahyono/ViBe (2022), Akhawaji et al. (2017), Ng et al. (2018), and Kakad et al. (2024)."
-
----
-
-### 3.3.5 — Baseline Decision Output
-
-**How to write it:**
-
-> "The baseline system will produce a binary output per candidate event: violation or non-violation."
-
-> "Any vehicle that exceeds the temporal threshold T while inside the restricted zone will be flagged as a violation. No information about surrounding traffic behavior will be considered. The baseline system evaluates each candidate vehicle entirely in isolation."
-
-**Output format:**
+**Table — Baseline output format:**
 
 | Output Field | Data Type | Description |
 |---|---|---|
-| Event ID | Integer | Unique identifier for this violation event |
-| Track ID | Integer | Which tracked vehicle triggered the violation |
-| Start frame | Integer | When vehicle first became stationary in zone |
+| Event ID | Integer | Unique identifier |
+| Track ID | Integer | Which vehicle triggered the violation |
+| Start frame | Integer | When vehicle became stationary in zone |
 | Trigger frame | Integer | When threshold was exceeded |
 | Decision | Binary | Violation (always, if threshold exceeded) |
 
-**Length for all of 3.3:** 2.5-3 pages including tables.
+**Length for all of 3.3:** 4–5 pages.
 
 ---
 
 ## 3.4 — Context-Aware Decision Logic Layer
 
-**How to write it:**
+**What this section is about:** Describes the proposed module — this is the study's contribution.
 
-Open with the positioning statement:
+**What to write as the section opener (no subsection):**
 
-> "The proposed context-aware decision logic layer will be inserted after the temporal threshold check in the baseline pipeline. It will receive candidate violation events — vehicles that have already been identified as stationary in the restricted zone beyond T seconds — and evaluate them against surrounding traffic behavior before confirming or suppressing the violation flag."
-
-> "The layer will use displacement data computed from bounding box centroid positions already produced by the tracking module. No additional detection models, sensors, or external data sources will be required."
+One paragraph: the layer is inserted after the temporal threshold check. It receives candidate violation events and evaluates them against surrounding traffic behavior before confirming or suppressing. Uses displacement data already produced by the tracking module. No additional models, sensors, or external data.
 
 ---
 
-### 3.4.1 — Vehicle Displacement Computation
+### 3.4.1 — Displacement and Stationary Ratio Computation
 
-**How to write it:**
+**What this section is about:** The foundational computations the three checks depend on.
 
-Describe the foundational computation that all subsequent checks will use.
+**What to write:**
 
-> "For every tracked vehicle visible in the current frame, displacement will be computed as the Euclidean distance between the vehicle's bounding box centroid in the current frame and its centroid N frames prior."
+**Displacement formula:**
 
-**Formula:**
+> displacement(v, f) = √[(cx_f − cx_(f−N))² + (cy_f − cy_(f−N))²]
 
-> displacement(v, f) = √[(cx_f - cx_(f-N))² + (cy_f - cy_(f-N))²]
-
-> Where:
-> - v = vehicle track ID
-> - f = current frame number
-> - cx, cy = centroid coordinates
-> - N = lookback window in frames
-
-**Motion classification:**
-
-> "Each tracked vehicle will be classified as stationary or moving based on its displacement:"
+**Table — Motion classification:**
 
 | Displacement | Classification |
 |---|---|
 | < δ pixels | Stationary |
 | ≥ δ pixels | Moving |
 
-> "This classification will be computed for ALL tracked vehicles in the scene, not only the candidate violation vehicle."
+State this is computed for ALL tracked vehicles, not only the candidate.
 
-**Parameters:**
-
-| Parameter | Symbol | Planned Value | Rationale |
-|---|---|---|---|
-| Lookback window | N | 30 frames | At 10 fps, covers 3 seconds — sufficient to distinguish genuinely stopped vehicles from slow-moving ones |
-| Displacement threshold | δ | 5 pixels | Absorbs minor bounding box jitter from detection noise without masking genuine slow movement |
-
-**Edge cases:**
-
-> "If a vehicle has been tracked for fewer than N frames, displacement will be computed from its first tracked frame to the current frame. If a vehicle has only one frame of tracking data, it will be excluded from motion classification for that frame."
-
-**Output:**
-
-> "This computation will produce a per-frame snapshot of which vehicles are moving and which are stationary across the entire visible scene."
-
----
-
-### 3.4.2 — Stationary Ratio Computation
-
-**How to write it:**
-
-Define the core metric.
-
-> "The stationary ratio R will be computed as the proportion of all tracked vehicles in the current frame that are classified as stationary."
-
-**Formula:**
+**Stationary ratio formula:**
 
 > R = (count of stationary vehicles) / (total count of tracked vehicles)
 
-**Interpretation:**
+**Table — Interpretation:**
 
 | R Value | Interpretation |
 |---|---|
-| R = 0.0 | All vehicles moving — normal traffic flow |
-| R = 0.5 | Half stationary, half moving — mixed traffic |
-| R = 1.0 | All vehicles stationary — collective stop (likely red light or congestion) |
+| R = 0.0 | All vehicles moving |
+| R = 0.5 | Half stationary, half moving |
+| R = 1.0 | All vehicles stationary |
 
-> "A high R value indicates collective stopping behavior. A low R value with the candidate vehicle stationary indicates the candidate is behaving differently from surrounding traffic."
-
-**Temporal tracking:**
-
-> "The stationary ratio will be computed per frame. For decision purposes, the system will use the ratio at the frame when the candidate vehicle first exceeded the temporal threshold T, and will continue monitoring the ratio while the candidate remains in the zone."
-
-**Edge case:**
-
-> "If only one vehicle is tracked in the frame (the candidate itself), the stationary ratio is undefined. In this case, the system will default to baseline behavior — confirming the violation based on temporal threshold alone. The surrounding vehicle check requires at least two tracked vehicles to function."
-
----
-
-### 3.4.3 — Collective Stop Detection (Check 1)
-
-**How to write it:**
-
-Describe the first decision check.
-
-> "When a candidate vehicle exceeds the temporal threshold T in the restricted zone, the system will evaluate the stationary ratio R at that moment."
-
-**Decision logic:**
-
-| Condition | Interpretation | Action |
-|---|---|---|
-| R > τ | Majority of traffic is stopped | Suppress violation flag (candidate likely part of collective stop) |
-| R ≤ τ | Traffic is flowing | Retain violation flag (candidate stopped individually) |
-
-**Congestion threshold parameter:**
+**Table — Parameters:**
 
 | Parameter | Symbol | Planned Value | Rationale |
 |---|---|---|---|
-| Congestion threshold | τ | 0.6 | If more than 60% of visible vehicles are stationary, collective stopping is the likely explanation |
+| Lookback window | N | 30 frames | At 10 fps = 3 seconds |
+| Displacement threshold | δ | 5 pixels | Absorbs detection jitter |
 
-**What this check will catch:**
-
-> "This check will address scenarios where traffic is broadly stopped: red light phases affecting the entire intersection approach, congestion extending through the camera view, or incident-related stops. In these conditions, every vehicle in the restricted zone would exceed the temporal threshold under the baseline system, potentially producing multiple simultaneous false positives. The collective stop detection will suppress all of them because surrounding traffic is also stationary."
-
-**What this check will not catch:**
-
-> "This check alone cannot distinguish between a vehicle that is temporarily stopped with traffic and a vehicle that is genuinely parked during a collective stop. If a vehicle parks during a red light phase, this check would suppress it along with legitimately stopped vehicles. This limitation is addressed by the Collective Clearance Check described in Section 3.4.4."
+**Edge cases:** Fewer than N frames of history → compute from first tracked frame. Only one vehicle tracked → R undefined, default to baseline behavior.
 
 ---
 
-### 3.4.4 — Collective Clearance Check (Check 2)
+### 3.4.2 — Collective Stop Detection (Check 1)
 
-**How to write it:**
+**What this section is about:** First decision check — is traffic collectively stopped?
 
-Describe the second check.
+**What to write:**
 
-> "The collective clearance check will monitor transitions in the stationary ratio over time. When surrounding traffic resumes movement — such as when a traffic signal turns green — the stationary ratio will drop. The system will check whether the candidate vehicle also resumed movement."
+**Table — Decision logic:**
 
-**Clearance event detection:**
-
-> "A collective clearance event will be detected when the stationary ratio R transitions from above τ to below τ within W consecutive frames."
-
-| Frame | R Value | Event |
-|---|---|---|
-| f | R > τ | Traffic collectively stopped |
-| f+1 to f+W | R drops below τ | Clearance event detected — traffic resuming movement |
-
-**Candidate behavior evaluation:**
-
-> "Upon detecting a clearance event, the system will check the candidate vehicle's displacement during the same window."
-
-| Candidate Behavior | Interpretation | Action |
-|---|---|---|
-| Candidate displacement > δ during clearance window | Candidate moved with traffic | Confirm as non-violation (candidate was part of collective stop) |
-| Candidate displacement ≤ δ during clearance window | Candidate did not move when traffic cleared | Confirm as violation (candidate stayed while others departed) |
-
-**Parameter:**
+| Condition | Action |
+|---|---|
+| R > τ | Suppress violation flag |
+| R ≤ τ | Retain violation flag |
 
 | Parameter | Symbol | Planned Value | Rationale |
 |---|---|---|---|
-| Clearance observation window | W | 50 frames | At 10 fps, covers 5 seconds — sufficient to observe a signal cycle transition |
+| Congestion threshold | τ | 0.6 | Majority threshold for collective stop |
 
-**Why this check is necessary:**
-
-> "This check will prevent genuine violations from being permanently suppressed by Check 1. A vehicle may begin parking during a red light phase when surrounding traffic is also stopped. Without Check 2, Check 1 would suppress this genuine violation indefinitely. Check 2 catches it by detecting the moment when traffic clears: if the candidate does not move with traffic, the violation flag is reinstated."
-
-**Continuous monitoring:**
-
-> "If the stationary ratio remains above τ continuously (prolonged congestion with no clearing), the violation flag will remain suppressed. The system will re-evaluate each frame. When congestion eventually clears and the candidate remains, Check 2 will catch it at that point."
+One paragraph on what it catches (red lights, congestion, incident stops). One sentence on its limitation: cannot distinguish a vehicle parked during a collective stop from one legitimately stopped. Reference Check 2.
 
 ---
 
-### 3.4.5 — Isolation Verification (Check 3)
+### 3.4.3 — Collective Clearance Check (Check 2)
 
-**How to write it:**
+**What this section is about:** Monitors what happens when traffic clears — does the candidate move or stay?
 
-Describe the third check.
+**What to write:**
 
-> "The isolation verification will examine whether the candidate vehicle is the only stationary vehicle in the scene while surrounding vehicles are moving."
+**Clearance event:** R transitions from above τ to below τ within W frames.
 
-**Logic:**
+**Table — Candidate evaluation:**
 
-> "When the stationary ratio R is below τ and the candidate vehicle has exceeded the temporal threshold T, the candidate is stationary while the majority of traffic moves. The system will flag this as an isolated stationary vehicle."
+| Candidate Behavior During Clearance | Action |
+|---|---|
+| Displacement > δ (moved with traffic) | Confirm as non-violation |
+| Displacement ≤ δ (stayed) | Confirm as violation |
 
-**Confidence classification:**
+| Parameter | Symbol | Planned Value | Rationale |
+|---|---|---|---|
+| Clearance window | W | 50 frames | At 10 fps = 5 seconds |
 
-> "This check will function as a confidence indicator rather than a decision modifier. When R is below τ, the candidate will be confirmed as a violation regardless of isolation status (since Check 1 only suppresses when R > τ). However, an isolated stationary vehicle — one stopped alone while all others move — represents the highest-confidence indicator of individual parking behavior."
+One paragraph on why this is necessary: prevents genuine violations from being permanently suppressed by Check 1. If R stays above τ (prolonged congestion), suppression continues until clearance occurs.
 
-**Output label:**
+---
+
+### 3.4.4 — Isolation Verification (Check 3)
+
+**What this section is about:** Confidence indicator — is the candidate the only stopped vehicle?
+
+**What to write:**
+
+State this is a confidence label, not a decision modifier.
+
+**Table — Confidence labels:**
 
 | Condition | Confidence Label |
 |---|---|
-| R very low (e.g., < 0.2) and only candidate stationary | High confidence — isolated anomaly |
-| R moderate (e.g., 0.2-0.6) with mixed traffic | Standard confidence |
+| R very low (< 0.2), only candidate stationary | High confidence — isolated anomaly |
+| R moderate (0.2–0.6), mixed traffic | Standard confidence |
 | R above τ, clearance detected, candidate stayed | Confirmed via divergence |
 
-**Relationship to Check 1:**
-
-> "Check 1 asks: 'Is everyone stopped?' and suppresses if yes. Check 3 asks: 'Is only this vehicle stopped?' and assigns high confidence if yes. Together they cover both ends of the spectrum."
+One sentence: Check 1 asks "Is everyone stopped?" — Check 3 asks "Is only this vehicle stopped?"
 
 ---
 
-### 3.4.6 — Combined Decision Flow
+### 3.4.5 — Combined Decision Flow
 
-**How to write it:**
+**What this section is about:** Shows the complete integrated logic and all outputs.
 
-Present the complete integrated logic.
+**What to write:**
 
-**Flow diagram:**
+**Figure 2 — Decision Flow Diagram**
 
-```
-Candidate vehicle exceeds T seconds stationary in zone
-                         ↓
-              Compute Stationary Ratio R
-                         ↓
-                ┌────────┴────────┐
-                │                 │
-            R > τ              R ≤ τ
-        (collective         (traffic 
-          stop)              flowing)
-                │                 │
-                ↓                 ↓
-        SUPPRESS flag      CONFIRM violation
-        (Check 1)          (with isolation
-                │           label from
-                │           Check 3)
-                ↓
-        Continue monitoring R
-                │
-        ┌───────┴───────┐
-        │               │
-    R drops to      R stays
-    below τ         above τ
-    (clearance)     (still stopped)
-        │               │
-        ↓               ↓
-    Check candidate   Remain suppressed
-    displacement      (re-evaluate
-        │              next frame)
-    ┌───┴───┐
-    │       │
-  Moved   Stayed
-    │       │
-    ↓       ↓
-  NON-    CONFIRM
-  VIOL.   violation
-          (Check 2)
-```
+This should be a proper decision flowchart (made in draw.io or similar). Must contain:
 
-**Terminal states:**
+| Element | What to show |
+|---|---|
+| Entry point | "Candidate vehicle exceeds T seconds stationary in zone" |
+| First computation | Compute Stationary Ratio R |
+| First branch | R > τ (go to suppress path) vs R ≤ τ (go to confirm path) |
+| Suppress path | Suppress flag → continue monitoring R → branch: R drops below τ (clearance) vs R stays above τ (remain suppressed) |
+| Clearance sub-branch | Check candidate displacement → moved (non-violation) vs stayed (confirm violation) |
+| Confirm path | Confirm violation with isolation label from Check 3 |
+| Terminal states | Four distinct endpoints clearly labeled |
+
+**Notes for groupmates:** This should be a clean, properly formatted flowchart with diamond shapes for decisions, rectangles for processes, and rounded rectangles for terminal states. Not ASCII art.
+
+**Table — Terminal states:**
 
 | Terminal State | Path | Meaning |
 |---|---|---|
-| Confirmed — isolated | R ≤ τ at threshold time | Vehicle stopped alone while traffic flows. High confidence. |
-| Confirmed — post-clearance | R was > τ, dropped to ≤ τ, candidate stayed | Vehicle stayed when traffic cleared. Genuine violation detected via divergence. |
-| Suppressed — collective stop | R > τ, no clearance yet | Vehicle likely stopped due to traffic. Suppressed pending clearance. |
-| Non-violation — moved with traffic | R dropped to ≤ τ, candidate moved | Vehicle was part of collective stop and departed with traffic. Correctly filtered. |
+| Confirmed — isolated | R ≤ τ at threshold time | Vehicle stopped alone while traffic flows |
+| Confirmed — post-clearance | R was > τ, dropped to ≤ τ, candidate stayed | Vehicle stayed when traffic cleared |
+| Suppressed — collective stop | R > τ, no clearance yet | Vehicle likely stopped due to traffic |
+| Non-violation — moved with traffic | R dropped to ≤ τ, candidate moved | Vehicle departed with traffic |
 
-**System output:**
-
-> "For each candidate event, the system will output:"
+**Table — System output per event:**
 
 | Output Field | Data Type | Description |
 |---|---|---|
@@ -628,58 +482,81 @@ Candidate vehicle exceeds T seconds stationary in zone
 | Stationary ratio at decision | Float | R value when decision was made |
 | Confidence | Categorical | High, standard, or via divergence |
 
----
+**Close the section** with the consolidated parameter summary (no separate subsection needed):
 
-### 3.4.7 — Parameter Summary
-
-**How to write it:**
-
-Consolidate all planned parameters in one reference table.
+**Table — All parameters:**
 
 | Parameter | Symbol | Planned Value | Component | Rationale |
 |---|---|---|---|---|
 | Temporal threshold | T | 60 seconds | Baseline + Proposed | Literature consensus from Chapter 2 |
-| Lookback window | N | 30 frames | Displacement computation | At 10 fps = 3 seconds observation window |
+| Lookback window | N | 30 frames | Displacement computation | At 10 fps = 3 seconds |
 | Displacement threshold | δ | 5 pixels | Displacement computation | Absorbs detection jitter |
 | Congestion threshold | τ | 0.6 | Check 1, Check 2 | Majority threshold for collective stop |
-| Clearance window | W | 50 frames | Check 2 | At 10 fps = 5 seconds for clearance observation |
+| Clearance window | W | 50 frames | Check 2 | At 10 fps = 5 seconds |
 
-> "Parameters marked as 'Literature consensus' are drawn from values used by the majority of reviewed studies. Parameters marked with rationale are initial values based on reasoning about typical traffic behavior. These parameters will be subject to sensitivity analysis as described in Section 3.5.5."
+State that τ will be subject to sensitivity analysis in Section 3.5.6.
 
-**Length for all of 3.4:** 7-9 pages including diagrams and tables.
+**Length for all of 3.4:** 7–9 pages.
 
 ---
 
 ## 3.5 — Evaluation Design
 
+**What this section is about:** Defines every experiment, metric, and comparison.
+
 ---
 
 ### 3.5.1 — Experimental Configurations
 
-**How to write it:**
+**What this section is about:** Lays out the four experiments and the full configuration matrix.
 
-Define exactly what will be compared.
+**What to write:**
 
-> "Two primary system configurations will be evaluated on identical test footage using identical ground truth annotations."
+**Table — Four experiments:**
 
-| Configuration | Detection | Tracking | Zone Check | Threshold | Context Layer |
-|---|---|---|---|---|---|
-| Baseline | YOLOv8 | DeepSORT | Same polygon | 60 seconds | OFF |
-| Proposed | YOLOv8 | DeepSORT | Same polygon | 60 seconds | ON |
+| Experiment | Purpose | Section |
+|---|---|---|
+| 1 — Pipeline Comparison | Evaluate the context-aware layer across all nine pipelines | 3.5.3 |
+| 2 — Component Ablation | Isolate the contribution of each check within the layer | 3.5.4 |
+| 3 — False Positive Source Analysis | Categorize which types of false positives the layer affects | 3.5.5 |
+| 4 — Parameter Sensitivity | Assess the effect of τ on precision and recall | 3.5.6 |
 
-> "Both configurations will process the same video frames in the same order using identical model weights, parameters, and zone definitions. The only variable will be the presence or absence of the context-aware decision logic layer."
+State that the best-performing pipeline from Experiment 1 (highest F1 with context ON) will be used for Experiments 2–4. If multiple pipelines tie within 2 percentage points, select the fastest.
 
-> "This controlled design ensures that any observed performance difference is attributable to the decision logic modification, not to variations in detection, tracking, or zone definition."
+**Table — Full 18-configuration matrix:**
+
+| Config ID | Detector | Tracker | Context Layer | Label |
+|---|---|---|---|---|
+| P1-Base | YOLOv8n | DeepSORT | OFF | Baseline |
+| P1-Ctx | YOLOv8n | DeepSORT | ON | Proposed |
+| P2-Base | YOLOv8n | ByteTrack | OFF | Baseline |
+| P2-Ctx | YOLOv8n | ByteTrack | ON | Proposed |
+| P3-Base | YOLOv8n | BoT-SORT | OFF | Baseline |
+| P3-Ctx | YOLOv8n | BoT-SORT | ON | Proposed |
+| P4-Base | YOLOv8s | DeepSORT | OFF | Baseline |
+| P4-Ctx | YOLOv8s | DeepSORT | ON | Proposed |
+| P5-Base | YOLOv8s | ByteTrack | OFF | Baseline |
+| P5-Ctx | YOLOv8s | ByteTrack | ON | Proposed |
+| P6-Base | YOLOv8s | BoT-SORT | OFF | Baseline |
+| P6-Ctx | YOLOv8s | BoT-SORT | ON | Proposed |
+| P7-Base | YOLOv8m | DeepSORT | OFF | Baseline |
+| P7-Ctx | YOLOv8m | DeepSORT | ON | Proposed |
+| P8-Base | YOLOv8m | ByteTrack | OFF | Baseline |
+| P8-Ctx | YOLOv8m | ByteTrack | ON | Proposed |
+| P9-Base | YOLOv8m | BoT-SORT | OFF | Baseline |
+| P9-Ctx | YOLOv8m | BoT-SORT | ON | Proposed |
+
+> "All 18 configurations will process the same video footage using the same ground truth annotations. Identical zone polygon definition and temporal threshold T = 60 seconds will be applied to all configurations."
 
 ---
 
 ### 3.5.2 — Evaluation Metrics
 
-**How to write it:**
+**What this section is about:** Defines every metric used across all four experiments.
 
-Define each metric precisely in the context of this study.
+**What to write:**
 
-**Classification outcomes:**
+**Table — Classification outcomes:**
 
 | Outcome | System Output | Ground Truth | Meaning |
 |---|---|---|---|
@@ -688,152 +565,218 @@ Define each metric precisely in the context of this study.
 | True Negative (TN) | Non-violation | Non-violation | Correctly ignored legitimate stop |
 | False Negative (FN) | Non-violation | Violation | Missed real violation |
 
-**Metrics:**
+**Table — Violation detection metrics:**
 
-| Metric | Formula | What It Measures | Expected Direction |
-|---|---|---|---|
-| Precision | TP / (TP + FP) | Of flagged violations, proportion that are genuine | Proposed > Baseline |
-| Recall | TP / (TP + FN) | Of genuine violations, proportion correctly flagged | Proposed ≈ Baseline |
-| F1 Score | 2 × P × R / (P + R) | Harmonic mean of precision and recall | Proposed ≥ Baseline |
-| False Positive Rate | FP / (FP + TN) | Rate of incorrect flags among non-violations | Proposed < Baseline |
+| Metric | Formula | What It Measures |
+|---|---|---|
+| Precision | TP / (TP + FP) | Of flagged violations, proportion that are genuine |
+| Recall | TP / (TP + FN) | Of genuine violations, proportion correctly flagged |
+| F1 Score | 2 × P × R / (P + R) | Harmonic mean of precision and recall |
+| False Positive Rate | FP / (FP + TN) | Rate of incorrect flags among non-violations |
 
-**Primary metric justification:**
+State that precision is the primary metric. Recall monitored to verify genuine violations are not suppressed.
 
-> "Precision is the primary evaluation metric. The proposed system is designed to reduce false positives by suppressing candidates during collective traffic stops. An increase in precision indicates that the layer correctly filters traffic-related false positives. Recall will be monitored to ensure that the layer does not suppress genuine violations. The ideal outcome is improved precision with minimal or no decrease in recall."
+**Table — Pipeline characterization metrics (computed once per pipeline — context layer does not affect these):**
+
+| Metric | What It Measures |
+|---|---|
+| Total unique track IDs generated | Track fragmentation / ID switching frequency |
+| Average track duration (frames) | Tracking stability |
+| Average FPS | Processing speed |
+
+**Table — Context layer effect metrics (each value = the Ctx result minus the Base result for that pipeline, computed from Table 1 in Section 3.5.3):**
+
+| Metric | Formula | What It Measures |
+|---|---|---|
+| ΔPrecision | P_Ctx Precision − P_Base Precision | How much the context layer changed precision for this pipeline. Positive = improved. Negative = worsened. |
+| ΔRecall | P_Ctx Recall − P_Base Recall | How much the context layer changed recall for this pipeline. |
+| ΔF1 | P_Ctx F1 − P_Base F1 | Net effect of the context layer for this pipeline. |
+
+**Notes for groupmates:** The Δ metrics are not raw results. They are derived by subtracting. Example: if P1-Base Precision = 0.55 and P1-Ctx Precision = 0.82, then P1 ΔPrecision = +0.27. These go in Table 2 of Section 3.5.3.
 
 ---
 
-### 3.5.3 — False Positive Source Analysis
+### 3.5.3 — Experiment 1: Pipeline Comparison Study
 
-**How to write it:**
+**What this section is about:** The main experiment — tests all 9 pipelines × 2 context states.
 
-> "False positives from both system configurations will be categorized by their cause using ground truth annotations."
+**What to write:**
 
-| FP Category | Definition | Example |
-|---|---|---|
-| Signal-related | Vehicle was stopped at a red light | Vehicle waiting at red, flagged after 60s |
-| Congestion-related | Vehicle was in slow or queued traffic | Vehicle in bumper-to-bumper traffic |
-| Loading-related | Vehicle temporarily stopped for loading | Delivery vehicle briefly in zone |
-| Detection/tracking error | FP caused by system error | Ghost detection, ID switch |
-| Other | Any cause not above | Yielding to pedestrian, etc. |
+State the purpose: (1) identify which pipeline produces the best end-to-end performance with the context-aware layer, (2) determine whether the layer's effect is consistent across pipelines.
 
-> "The distribution of false positive sources will be compared between baseline and proposed configurations."
+Present three empty results table templates:
 
-**Expected outcome:**
+**Table 1 — Raw violation detection metrics for all 18 configurations:**
 
-| FP Category | Baseline | Proposed (Expected) |
-|---|---|---|
-| Signal-related | Present | Reduced or eliminated |
-| Congestion-related | Present | Reduced or eliminated |
-| Loading-related | Present | Possibly reduced (if others also stopped) |
-| Detection/tracking error | Present | Unchanged (layer does not modify detection/tracking) |
+(Each row = one experimental run. Two rows per pipeline — one with context OFF, one with context ON.)
 
-> "This analysis will demonstrate whether the context-aware layer specifically addresses traffic-related false positives as intended, while leaving other error sources unaffected."
+| Config ID | Detector | Tracker | Context | Precision | Recall | F1 | FPR |
+|---|---|---|---|---|---|---|---|
+| P1-Base | YOLOv8n | DeepSORT | OFF | — | — | — | — |
+| P1-Ctx | YOLOv8n | DeepSORT | ON | — | — | — | — |
+| P2-Base | YOLOv8n | ByteTrack | OFF | — | — | — | — |
+| P2-Ctx | YOLOv8n | ByteTrack | ON | — | — | — | — |
+| P3-Base | YOLOv8n | BoT-SORT | OFF | — | — | — | — |
+| P3-Ctx | YOLOv8n | BoT-SORT | ON | — | — | — | — |
+| P4-Base | YOLOv8s | DeepSORT | OFF | — | — | — | — |
+| P4-Ctx | YOLOv8s | DeepSORT | ON | — | — | — | — |
+| P5-Base | YOLOv8s | ByteTrack | OFF | — | — | — | — |
+| P5-Ctx | YOLOv8s | ByteTrack | ON | — | — | — | — |
+| P6-Base | YOLOv8s | BoT-SORT | OFF | — | — | — | — |
+| P6-Ctx | YOLOv8s | BoT-SORT | ON | — | — | — | — |
+| P7-Base | YOLOv8m | DeepSORT | OFF | — | — | — | — |
+| P7-Ctx | YOLOv8m | DeepSORT | ON | — | — | — | — |
+| P8-Base | YOLOv8m | ByteTrack | OFF | — | — | — | — |
+| P8-Ctx | YOLOv8m | ByteTrack | ON | — | — | — | — |
+| P9-Base | YOLOv8m | BoT-SORT | OFF | — | — | — | — |
+| P9-Ctx | YOLOv8m | BoT-SORT | ON | — | — | — | — |
+
+**Table 2 — Context layer effect size per pipeline (derived from Table 1):**
+
+(Each row = the subtraction between Ctx and Base for that pipeline. One row per pipeline. Positive = layer helped. Negative = layer hurt.)
+
+| Pipeline | Detector | Tracker | ΔPrecision | ΔRecall | ΔF1 |
+|---|---|---|---|---|---|
+| P1 | YOLOv8n | DeepSORT | — | — | — |
+| P2 | YOLOv8n | ByteTrack | — | — | — |
+| P3 | YOLOv8n | BoT-SORT | — | — | — |
+| P4 | YOLOv8s | DeepSORT | — | — | — |
+| P5 | YOLOv8s | ByteTrack | — | — | — |
+| P6 | YOLOv8s | BoT-SORT | — | — | — |
+| P7 | YOLOv8m | DeepSORT | — | — | — |
+| P8 | YOLOv8m | ByteTrack | — | — | — |
+| P9 | YOLOv8m | BoT-SORT | — | — | — |
+
+**Table 3 — Pipeline characterization (independent of context layer — same numbers whether ON or OFF):**
+
+| Pipeline | Detector | Tracker | Total Track IDs | Avg Track Duration (frames) | Avg FPS |
+|---|---|---|---|---|---|
+| P1 | YOLOv8n | DeepSORT | — | — | — |
+| P2 | YOLOv8n | ByteTrack | — | — | — |
+| P3 | YOLOv8n | BoT-SORT | — | — | — |
+| P4 | YOLOv8s | DeepSORT | — | — | — |
+| P5 | YOLOv8s | ByteTrack | — | — | — |
+| P6 | YOLOv8s | BoT-SORT | — | — | — |
+| P7 | YOLOv8m | DeepSORT | — | — | — |
+| P8 | YOLOv8m | ByteTrack | — | — | — |
+| P9 | YOLOv8m | BoT-SORT | — | — | — |
+
+**Five planned analyses** — state what is compared and what the comparison reveals:
+
+1. **Detector effect** — hold tracker constant, compare across detectors (P1 vs P4 vs P7, P2 vs P5 vs P8, P3 vs P6 vs P9). Reveals how detection capacity affects violation detection and context layer effectiveness.
+
+2. **Tracker effect** — hold detector constant, compare across trackers (P1 vs P2 vs P3, P4 vs P5 vs P6, P7 vs P8 vs P9). Reveals how tracking methodology affects the context layer.
+
+3. **Context layer consistency** — compare ΔPrecision and ΔF1 across all nine pipelines. Reveals whether the layer is pipeline-agnostic or pipeline-dependent.
+
+4. **Interaction effects** — examine whether detector and tracker quality interact in their effect on the context layer.
+
+5. **Speed-accuracy tradeoff** — plot F1 (context ON) against average FPS for all nine pipelines. Identifies which pipeline balances accuracy and speed.
 
 ---
 
-### 3.5.4 — Ablation Study Design
+### 3.5.4 — Experiment 2: Component Ablation
 
-**How to write it:**
+**What this section is about:** Tests each check in the context-aware layer individually.
 
-> "To isolate the contribution of each component within the context-aware layer, the following incremental configurations will be tested."
+**What to write:**
 
-| Config | Name | Check 1 (Stationary Ratio) | Check 2 (Clearance) | Check 3 (Isolation) |
+State this will be conducted on the best-performing pipeline from Experiment 1.
+
+**Table — Ablation configurations:**
+
+| Config | Name | Check 1 | Check 2 | Check 3 |
 |---|---|---|---|---|
 | A | Baseline | OFF | OFF | OFF |
 | B | Ratio only | ON | OFF | OFF |
 | C | Ratio + Clearance | ON | ON | OFF |
 | D | Full proposed | ON | ON | ON |
 
-**Analysis:**
+**Table — Comparisons:**
 
-| Comparison | What It Shows |
+| Comparison | What It Reveals |
 |---|---|
-| B vs A | Does suppressing during collective stops improve precision? |
-| C vs B | Does clearance check recover genuine violations, improving recall relative to B? |
-| D vs C | Does isolation labeling add value? |
+| B vs A | Effect of collective stop suppression alone |
+| C vs B | Effect of adding the clearance check |
+| D vs C | Effect of adding isolation labeling |
 
-> "Each configuration will be evaluated using the same metrics and ground truth. Results will show whether each component contributes measurable improvement."
+State all four evaluated with same metrics and ground truth.
 
 ---
 
-### 3.5.5 — Parameter Sensitivity Analysis
+### 3.5.5 — Experiment 3: False Positive Source Analysis
 
-**How to write it:**
+**What this section is about:** Categorizes what caused the false positives.
 
-> "The congestion threshold τ is the primary tunable parameter controlling how aggressively the system suppresses candidates. To assess its effect, the full proposed system will be evaluated at multiple τ values."
+**What to write:**
 
-| τ Value | Expected Behavior |
-|---|---|
-| 0.3 | Very aggressive — suppresses when only 30% stopped. Risk: may suppress genuine violations. |
-| 0.4 | Aggressive |
-| 0.5 | Moderate — suppresses when half stopped |
-| 0.6 | Default — suppresses when clear majority stopped |
-| 0.7 | Conservative — requires 70% stopped |
-| 0.8 | Very conservative — suppresses only during near-total stops |
+State this will be conducted on the best-performing pipeline from Experiment 1.
 
-**Planned analysis:**
+**Table — FP categories:**
 
-> "Precision and recall will be computed for each τ value and plotted. The plot will reveal the precision-recall tradeoff: lower τ values are expected to increase precision (more suppression) but may decrease recall (genuine violations also suppressed). Higher τ values will preserve recall but provide less false positive reduction."
-
-> "The optimal τ value will be identified as the point that maximizes precision improvement while maintaining acceptable recall."
-
-**Secondary parameters:**
-
-> "If evaluation time permits, sensitivity analysis will also be conducted for:"
-
-| Parameter | Test Values | Purpose |
+| FP Category | Definition | Example |
 |---|---|---|
-| Displacement threshold δ | 3, 5, 7, 10 pixels | Assess effect of motion sensitivity |
-| Lookback window N | 15, 30, 45 frames | Assess effect of observation duration |
+| Signal-related | Vehicle stopped at red light | Waiting at red, flagged after T seconds |
+| Congestion-related | Vehicle in slow or queued traffic | Bumper-to-bumper |
+| Loading-related | Vehicle temporarily stopped for loading | Delivery vehicle briefly in zone |
+| Detection/tracking error | FP caused by system error | Ghost detection, ID switch |
+| Other | Any cause not above | Yielding to pedestrian, etc. |
 
-**Length for all of 3.5:** 4-5 pages including tables.
+State that FP category distribution will be compared between baseline and proposed to identify which categories the context layer affects.
+
+---
+
+### 3.5.6 — Experiment 4: Parameter Sensitivity Analysis
+
+**What this section is about:** Tests how the congestion threshold τ affects performance.
+
+**What to write:**
+
+State this will be conducted on the best-performing pipeline from Experiment 1.
+
+**Table — τ values to test:**
+
+| τ Value | Description |
+|---|---|
+| 0.3 | Very aggressive suppression |
+| 0.4 | Aggressive |
+| 0.5 | Moderate |
+| 0.6 | Default |
+| 0.7 | Conservative |
+| 0.8 | Very conservative |
+
+State that precision and recall will be computed and plotted for each τ value.
+
+**Table — Secondary parameters (if time permits):**
+
+| Parameter | Test Values |
+|---|---|
+| Displacement threshold δ | 3, 5, 7, 10 pixels |
+| Lookback window N | 15, 30, 45 frames |
+
+**Length for all of 3.5:** 7–9 pages.
 
 ---
 
 ## 3.6 — Scope and Limitations
 
-**How to write it:**
+**What this section is about:** States what the study covers and does not cover.
 
-State methodological boundaries honestly.
+**What to write:**
 
----
+No subsections. Write as a series of short paragraphs.
 
-### 3.6.1 — Parameter Selection
+**Paragraph 1:** This study tests whether surrounding vehicle displacement data in the decision logic reduces false positives in fixed-camera illegal parking detection. It evaluates this across nine pipelines on footage from one location.
 
-> "The congestion threshold τ, displacement threshold δ, lookback window N, and clearance window W are set to initial values based on reasoning about typical traffic behavior. While sensitivity analysis will be conducted for τ, systematic optimization of all parameters across diverse scenes is beyond the scope of this study. Optimal parameter values may differ across camera angles, resolutions, traffic patterns, and geographic contexts."
+**Paragraph 2:** This study does not modify the detection or tracking stages. All models use pretrained weights and default configurations. Improving detection accuracy, reducing ID switches, or handling environmental challenges (rain, night, shadows, occlusion) are not addressed.
 
----
+**Paragraph 3:** Evaluation is on footage from a single camera at one location. Generalization to other locations, cameras, and traffic patterns is future work.
 
-### 3.6.2 — Edge Case: Simultaneous Independent Parking
+**Paragraph 4:** Context-aware layer parameters are set to initial values. Sensitivity analysis is conducted for τ. Optimal values may differ across locations.
 
-> "The stationary ratio assumes that a high proportion of stationary vehicles indicates collective traffic behavior. In a rare scenario where multiple vehicles independently and simultaneously park illegally in the zone, the ratio would be high and the system may incorrectly suppress genuine violations. This edge case is acknowledged but is expected to be rare in practice."
+**Paragraph 5:** The stationary ratio requires at least two tracked vehicles. In single-vehicle scenes the system defaults to baseline behavior.
 
----
-
-### 3.6.3 — Bounding Box Centroid Jitter
-
-> "Displacement is computed from bounding box centroids, which may exhibit frame-to-frame jitter from detection noise even for truly stationary vehicles. The displacement threshold δ is set to accommodate typical jitter levels, but optimal values may vary across camera resolutions, viewing angles, and detector configurations."
-
----
-
-### 3.6.4 — Single Dataset Evaluation
-
-> "Evaluation will be conducted on footage from a single camera position at one location. Generalization to other viewing angles, intersection geometries, traffic patterns, and geographic contexts will require further validation with additional datasets. This study establishes feasibility and measures effect size at one location; broader generalization is identified as future work."
-
----
-
-### 3.6.5 — Tracker Dependency
-
-> "The context-aware layer depends on the tracking module maintaining correct vehicle identities for both the candidate and surrounding vehicles. If the tracker produces significant ID switching or track fragmentation, the stationary ratio computation may be unreliable. Tracker performance is not modified in this study; the layer is evaluated using DeepSORT with default parameters."
-
----
-
-### 3.6.6 — Minimum Vehicle Count
-
-> "The surrounding vehicle check requires at least two tracked vehicles to compute a meaningful stationary ratio. In scenarios with only one visible vehicle, the system will default to baseline behavior. The effectiveness of the proposed layer is therefore limited to multi-vehicle scenes."
-
-**Length for all of 3.6:** 1.5-2 pages.
+**Length for 3.6:** 1–1.5 pages.
 
 ---
 
@@ -841,42 +784,38 @@ State methodological boundaries honestly.
 
 | Section | Title | Length |
 |---|---|---|
-| 3.1 | Conceptual Framework | 2.5-3 pages |
-| 3.1.1 | Problem-to-Solution Mapping | — |
-| 3.1.2 | System Architecture Overview | — |
-| 3.1.3 | Contribution Positioning | — |
-| 3.1.4 | Controlled Comparison Design | — |
-| 3.2 | Data Collection and Preparation | 4-5 pages |
+| 3.1 | Conceptual Framework | 3–3.5 pages |
+| 3.1.1 | System Architecture Overview | — |
+| 3.1.2 | Contribution Positioning | — |
+| 3.2 | Data Collection and Preparation | 4–5 pages |
 | 3.2.1 | Dataset Requirements | — |
 | 3.2.2 | Data Source | — |
 | 3.2.3 | Ground Truth Annotation Protocol | — |
 | 3.2.4 | Video Preprocessing | — |
-| 3.3 | Baseline System Architecture | 2.5-3 pages |
+| 3.3 | System Architecture | 4–5 pages |
 | 3.3.1 | Vehicle Detection Module | — |
 | 3.3.2 | Vehicle Tracking Module | — |
-| 3.3.3 | Zone Membership Check | — |
-| 3.3.4 | Temporal Threshold Check | — |
-| 3.3.5 | Baseline Decision Output | — |
-| 3.4 | Context-Aware Decision Logic Layer | 7-9 pages |
-| 3.4.1 | Vehicle Displacement Computation | — |
-| 3.4.2 | Stationary Ratio Computation | — |
-| 3.4.3 | Collective Stop Detection (Check 1) | — |
-| 3.4.4 | Collective Clearance Check (Check 2) | — |
-| 3.4.5 | Isolation Verification (Check 3) | — |
-| 3.4.6 | Combined Decision Flow | — |
-| 3.4.7 | Parameter Summary | — |
-| 3.5 | Evaluation Design | 4-5 pages |
+| 3.3.3 | Pipeline Combinations | — |
+| 3.3.4 | Baseline Decision Logic | — |
+| 3.4 | Context-Aware Decision Logic Layer | 7–9 pages |
+| 3.4.1 | Displacement and Stationary Ratio Computation | — |
+| 3.4.2 | Collective Stop Detection (Check 1) | — |
+| 3.4.3 | Collective Clearance Check (Check 2) | — |
+| 3.4.4 | Isolation Verification (Check 3) | — |
+| 3.4.5 | Combined Decision Flow | — |
+| 3.5 | Evaluation Design | 7–9 pages |
 | 3.5.1 | Experimental Configurations | — |
 | 3.5.2 | Evaluation Metrics | — |
-| 3.5.3 | False Positive Source Analysis | — |
-| 3.5.4 | Ablation Study Design | — |
-| 3.5.5 | Parameter Sensitivity Analysis | — |
-| 3.6 | Scope and Limitations | 1.5-2 pages |
-| 3.6.1 | Parameter Selection | — |
-| 3.6.2 | Edge Case: Simultaneous Independent Parking | — |
-| 3.6.3 | Bounding Box Centroid Jitter | — |
-| 3.6.4 | Single Dataset Evaluation | — |
-| 3.6.5 | Tracker Dependency | — |
-| 3.6.6 | Minimum Vehicle Count | — |
+| 3.5.3 | Experiment 1: Pipeline Comparison Study | — |
+| 3.5.4 | Experiment 2: Component Ablation | — |
+| 3.5.5 | Experiment 3: False Positive Source Analysis | — |
+| 3.5.6 | Experiment 4: Parameter Sensitivity Analysis | — |
+| 3.6 | Scope and Limitations | 1–1.5 pages |
 
-**Total estimated length:** 22-27 pages.
+**Figures to create:**
+| Figure | What It Shows | Where It Goes |
+|---|---|---|
+| Figure 1 | System architecture — baseline and proposed paths with data flow | 3.1.1 |
+| Figure 2 | Decision flow diagram for the context-aware layer | 3.4.5 |
+
+**Total estimated length:** 27–33 pages.
