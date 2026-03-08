@@ -110,6 +110,8 @@ Five requirements, each one to two sentences:
 
 ### 3.2.2 — Data Source
 
+Discard the time period requirement
+
 **What this section is about:** States where the footage comes from.
 
 **What to write:**
