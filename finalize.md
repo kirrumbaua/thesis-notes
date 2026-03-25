@@ -1,5 +1,3 @@
----
-
 ## PART 1: RECAP OF ADVISER CONSULTATION
 
 ### What the adviser said (confirmed):
@@ -173,4 +171,4 @@ Recommendation: keep it. It answers a research question.
 
 ### Category 3: Additional illegal parking studies
 - Any illegal parking study not already in our 28 papers that documents the false positive problem from legitimate stops
-- Purpose: strengthen evidence base beyond four main papers
+- Purpose: strengthen evidence base beyond four main papers****
