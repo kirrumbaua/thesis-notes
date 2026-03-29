@@ -1,3 +1,9 @@
+
+
+Here's the complete final version with your additions integrated at the bottom as a separate section:
+
+---
+
 ## PART 1: RECAP OF ADVISER CONSULTATION
 
 ### What the adviser said:
@@ -37,136 +43,113 @@
 ## PART 3: OPEN QUESTIONS (group needs to finalize, no adviser needed)
 
 ### Question 1: Single pipeline choice
-We need to pick ONE pipeline instead of nine. Options:
-- YOLOv8n + simple IoU tracker (lightest, adviser suggested simplicity)
-- YOLOv8s + DeepSORT (middle ground, commonly used in literature)
-- YOLOv8m + ByteTrack (heavier but potentially more stable tracking)
-
-Decision needed: which one? Consider what our hardware can run and what is easiest to justify in writing.
+~~We need to pick ONE pipeline instead of nine.~~
+**FINALIZED: YOLOv8n + simple IoU template matching.** Adviser prefers efficiency. Deep learning trackers are resource expensive.
 
 ### Question 2: Tracker choice
-Adviser said DeepSORT is overkill. Options:
-- Use simple IoU matching (link bounding boxes by spatial overlap between frames). Justification: we only need centroid positions and track persistence, not appearance features.
-- Use DeepSORT anyway. Justification: it is the most commonly used tracker in recent illegal parking papers.
-- Use ByteTrack. Justification: motion-only association, no appearance model, lighter than DeepSORT but more robust than raw IoU.
-
-Decision needed: which one? This connects to Question 1.
+~~Adviser said DeepSORT is overkill.~~
+**FINALIZED: Simple IoU template matching.** We only need centroid positions and track persistence, not appearance-based re-identification. Fixed camera with stable geometry means spatial overlap between consecutive frame detections is sufficient.
 
 ### Question 3: How to ground the 5-pixel threshold
-Options:
-- Run a quick empirical test: place a stationary vehicle in frame, run detector for 100+ frames, measure maximum centroid jitter. If max jitter is 3-4 pixels, then 5 is justified.
-- Make it a parameter in sensitivity analysis: test at 3, 5, 7, 10 pixels and report which works best.
-- Both.
-
-Decision needed: do we do the empirical test, the sensitivity analysis, or both?
+**Still open.** Need to find a formula or method that grounds this in something meaningful, like actual vehicle speed or physical distance. Camera angle and height may affect how many pixels correspond to real-world movement. Options remain:
+- Empirical jitter test on stationary vehicle
+- Sensitivity analysis at multiple values
+- Find a formula that converts pixel displacement to real-world distance based on camera parameters
+- Some combination of the above
 
 ### Question 4: Where is our actual test footage coming from?
-- Do we already have footage recorded?
-- If not, where will we set up?
-- Is it confirmed one-way road with traffic signals?
-- Does the footage contain enough signal cycles (vehicles stopping and going) to produce meaningful false positive events?
-
-Decision needed: confirm footage source and verify it matches our scenario.
+**Still open.** Must be:
+- One-way road or single-direction traffic flow
+- Has traffic signals causing vehicles to stop and go
+- Contains enough signal cycles to produce meaningful false positive events
 
 ### Question 5: Do we keep the ablation study?
-Adviser said focus on the proposal, not extensive ablation on parts that do not matter. But the ablation (baseline vs Check 1 only vs full system) directly tests our context-aware layer components. Options:
-- Keep it. It is only 3 configs on one pipeline. Low effort, high value for defense.
-- Remove it. Focus only on context ON vs OFF.
-
-Recommendation: keep it. It is cheap to run and directly answers how each check contributes.
+**FINALIZED: Yes.** 3 configs (baseline, Check 1 only, full system) on the single pipeline. Low effort, high value for defense.
 
 ### Question 6: Do we keep the parameter sensitivity on τ?
-This tests the congestion threshold at different values. It directly answers Research Question 3. Options:
-- Keep it. Same pipeline, same footage, just change τ. Minimal extra work.
-- Remove it. But then Research Question 3 has no answer.
-
-Recommendation: keep it. It answers a research question.
+**FINALIZED: Yes.** It directly answers Research Question 3.
 
 ---
 
-## PART 4: WHAT TO FIX IN CHAPTER 2
+## PART 4: WHAT TO FIX IN CHAPTER 1
 
 ### Fix 1: Add traffic law grounding
-- Find Philippine traffic laws or any country's traffic laws that define illegal parking (where parking is prohibited, what duration constitutes parking vs stopping)
-- Insert as a short subsection early in Chapter 2, or in Chapter 1 background
-- Purpose: ground our ROI zone definition and temporal threshold in actual regulations, not arbitrary choices
+- Find Philippine traffic laws (RA 4136 or local ordinances) or any country's traffic laws that define illegal parking
+- Define what constitutes illegal parking: where parking is prohibited, what duration constitutes parking vs stopping
+- Insert as a section in Chapter 1 background
+- Purpose: ground our ROI zone definition and temporal threshold in actual regulations
 
-### Fix 2: Add papers matching our test site scenario
+---
+
+## PART 5: WHAT TO FIX IN CHAPTER 2
+
+### Fix 1: Add papers matching our test site scenario
 - Find studies that use one-way road or single-direction traffic flow
 - Does not need to be illegal parking specifically, can be any traffic violation detection or traffic monitoring study
 - Needs to report false positives from traffic stops, congestion, or signal-related stationarity
 - Purpose: show that the false positive problem we address occurs in our specific scenario, not just in intersections
+- We do not know yet if we will find any
+
+### Fix 2: Add additional illegal parking or context-aware studies
+- Any illegal parking study not already in our 28 papers that documents the false positive problem from legitimate stops
+- Preferably any study with context-aware approaches if they exist
+- Purpose: strengthen evidence base beyond four main papers
 
 ### Fix 3: Possibly adjust evidence paper framing
 - Our four main evidence papers (Gao, Wahyono, Kathait, Makmur) are from different scenarios (intersection, parking lot, junction)
 - We do not remove them, they still document the pattern (problem acknowledged, fix not evaluated)
-- But we may need additional papers from scenarios closer to ours to strengthen the argument that the problem exists in one-way road contexts too
-
-### Fix 4: Review if any paper needs to be removed or repositioned
-- Makmur et al. is motorcycle parking in a parking lot, which is quite different from our scenario
-- It still shows the pattern, but if the adviser questions it, we should be ready to explain why it is included (same pattern of unevaluated differentiation mechanism, not same scenario)
+- But we may need additional papers from scenarios closer to ours to strengthen the argument
+- Makmur et al. is motorcycle parking in a parking lot, quite different from our scenario. Still shows the pattern but be ready to defend why it is included
 
 ---
 
-## PART 5: WHAT TO FIX IN CHAPTER 3
+## PART 6: WHAT TO FIX IN CHAPTER 3
 
 ### Fix 1: Remove 9-pipeline comparison
-- Replace Experiment 1 (18 runs across 9 pipelines) with a single pipeline
+- Replace with single pipeline: YOLOv8n + simple IoU template matching
 - Core evaluation becomes: one pipeline, context OFF vs context ON
-- Simplifies the entire evaluation design section significantly
+- Remove all tables and discussion comparing detector variants and tracker variants
+- Modify any text that mentions selection of the best pipeline for other experiments
 
 ### Fix 2: Update pipeline description
-- Pick one detector and one tracker
-- Justify the choice
-- Remove all tables and discussion comparing detector variants and tracker variants
+- Describe YOLOv8n as the detector and simple IoU matching as the tracker
+- Justify the choice: adviser recommended efficiency, we only need centroid positions and track persistence, appearance-based re-identification is unnecessary for fixed camera with stable geometry
 
-### Fix 3: Keep ablation study (pending group decision)
-- If kept: 3 configs (baseline, Check 1 only, full system) on the single chosen pipeline
-- Update section to reflect single pipeline, not best pipeline selected from Experiment 1
+### Fix 3: We will NOT compare our framework against frameworks from other authors using our own dataset
+- Different scenarios, different datasets, no access or detailed knowledge of their detection implementation
+- We create our own baseline: context OFF vs context ON, on our own dataset only
 
-### Fix 4: Keep parameter sensitivity (pending group decision)
-- If kept: test τ at multiple values on the single chosen pipeline
+### Fix 4: Keep ablation study
+- 3 configs (baseline, Check 1 only, full system) on the single pipeline
+- Update section to reflect single pipeline, remove references to best pipeline selection from Experiment 1
+
+### Fix 5: Keep parameter sensitivity on τ
+- Test τ at multiple values on the single pipeline
 - Update section to reflect single pipeline
 
-### Fix 5: Keep FP source analysis
+### Fix 6: Keep FP source analysis
 - Categorize false positives from context OFF run by source (signal, congestion, detection error, other)
 - Compare distribution against context ON run
-- No changes needed to the structure, just runs on one pipeline instead of best pipeline from 9
+- Some false positives may be out of our control (detection errors, occlusion), annotate and describe what happened in each case
+- Runs on one pipeline instead of best pipeline from 9
 
-### Fix 6: Ground the 5-pixel threshold
-- Either add empirical justification (jitter measurement test) or move it to sensitivity analysis
+### Fix 7: Ground the 5-pixel threshold
+- Find a formula, reference, or method that makes this meaningful in terms of actual vehicle speed or physical distance
+- Camera angle and height may matter for pixel-to-real-world conversion
+- If no formula found, move to sensitivity analysis and let experiments determine optimal value
 - Remove or soften the current rationale that just says "absorbs centroid jitter"
 
-### Fix 7: Remove pipeline characterization metrics table
+### Fix 8: Remove pipeline characterization metrics table
 - Total unique track IDs and average track duration were for comparing 9 pipelines
-- With one pipeline, this becomes a single data point, not a comparison
-- Can mention it briefly in results but does not need its own table
+- With one pipeline this is a single data point, not a comparison
+- Can mention briefly in results but does not need its own table
 
-### Fix 8: Update scope and limitations
+### Fix 9: Update scope and limitations
 - Add that the system is designed for one-way or single-direction traffic flow
 - Add that multi-directional traffic (intersections, two-way roads) would require lane-level segmentation and is identified as future work
 - Remove references to 9 pipelines
 
-### Fix 9: Simplify flowchart and parameter table
+### Fix 10: Simplify flowchart and parameter table
 - No changes to the context-aware layer itself (Check 1 and Check 2 stay)
 - No changes to the 5 parameters (T, N, δ, τ, W)
 - Just update surrounding text that references pipeline selection and multi-pipeline comparison
-
----
-
-## PART 6: PAPERS TO FIND
-
-### Category 1: Traffic laws
-- Philippine traffic law (RA 4136 or local ordinances) defining illegal parking
-- Any country's traffic code defining no-parking zones, stopping vs parking distinction, and prohibited parking locations
-- Purpose: ground our system definition in law
-
-### Category 2: One-way road traffic monitoring studies
-- Any computer vision traffic monitoring study on one-way roads or single-direction traffic
-- Preferably reporting false positives from signal stops or congestion
-- Does not need to be illegal parking specifically
-- Purpose: show our scenario has the same problem
-
-### Category 3: Additional illegal parking studies
-- Any illegal parking study not already in our 28 papers that documents the false positive problem from legitimate stops
-- Purpose: strengthen evidence base beyond four main papers****
