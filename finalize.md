@@ -1,9 +1,4 @@
 
-
-Here's the complete final version with your additions integrated at the bottom as a separate section:
-
----
-
 ## PART 1: RECAP OF ADVISER CONSULTATION
 
 ### What the adviser said:
