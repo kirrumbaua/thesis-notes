@@ -2,7 +2,7 @@
 
 ### What the adviser said (confirmed):
 
-1. **The overall idea is approved.** Checking if surrounding vehicles are also stationary before confirming a violation is solid. He signed off on continuation.
+1. **The overall idea is approved.** Checking if surrounding vehicles are also stationary before confirming a violation is good.
 
 2. **No arbitrary thresholds.** The 5-pixel displacement threshold was questioned. He wants parameters grounded in something, not just picked. His suggestion: let the experiments determine optimal values rather than defending arbitrary numbers upfront.
 
