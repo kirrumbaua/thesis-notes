@@ -1,6 +1,6 @@
 ## PART 1: RECAP OF ADVISER CONSULTATION
 
-### What the adviser said (confirmed):
+### What the adviser said:
 
 1. **The overall idea is approved.** Checking if surrounding vehicles are also stationary before confirming a violation is good.
 
