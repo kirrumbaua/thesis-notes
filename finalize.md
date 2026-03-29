@@ -16,8 +16,6 @@
 
 7. **Scenarios must match test site.** The problems we cite from our evidence papers (Gao, Wahyono, Kathait, Makmur) should be the same type of problem that occurs in our actual footage. If our camera is on a one-way road, we need to show that false positives from traffic stops happen on one-way roads too.
 
-8. **Writing is too fluffy.** Get to the point. State methodology directly without unnecessary buildup.
-
 ### What I think the adviser meant (my interpretation, needs confirmation with group):
 
 - He was NOT saying skip the ON/OFF comparison. He was saying the OFF run itself is the baseline. We do not need external baselines from other papers.
