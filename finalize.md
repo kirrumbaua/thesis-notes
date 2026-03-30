@@ -12,7 +12,7 @@
 
 5. **DeepSORT is overkill.** He was suggesting simpler tracking might be sufficient, not that we can never use it. We can still use whatever tracker we want as long as we justify it. He suggested this for efficiency, not as a strict requirement.
 
-6. **False positives as baseline.** Run the system without context layer, it produces false positives. Run with context layer, it produces fewer. Compare the two. The OFF run itself is the baseline. We compare against our own system, not against other authors' numbers. We do not need external baselines from other papers.
+6. **Compare against other authors.** He wants us to compare our results to other authors' systems, ideally papers that mention the same problem and operate in similar scenarios like one-way roads. (We will not follow this because we cannot replicate their systems 1:1, have no access to their implementations or datasets, and the scenarios differ. We create our own baseline: context OFF vs context ON, on our own dataset only.)
 
 7. **Scenarios must match test site.** The problems we cite from our evidence papers should be the same type of problem that occurs in our actual footage.
 
