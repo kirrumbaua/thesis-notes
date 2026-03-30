@@ -6,7 +6,7 @@
 
 2. **No arbitrary thresholds.** The 5-pixel displacement threshold was questioned. He wants parameters grounded in something meaningful, possibly tied to real-life measurement like actual vehicle speed, taking into account camera angle, height, or some formula for pixel-to-distance conversion. Not just a number we picked. We will fix the default value to make it more grounded, but we will still have a separate parameter sensitivity analysis to test what is the most optimal pixel displacement threshold.
 
-3. **Define illegal parking based on actual laws.** The ROI zone definition and what constitutes a violation should be grounded in real traffic regulations, not made up rules. This can be from any country as long as the logic matches our scenario.
+3. **Define illegal parking based on actual laws.** The ROI zone definition and what constitutes a violation should be grounded in real traffic regulations, not made up rules. This can be from any country as long as the logic matches our scenario. (Alhough we already know this we just need to discuss it on the paper explicitly).
 
 4. **Simplify the pipeline.** Testing 9 pipeline combinations is unnecessary. Our contribution is the context-aware layer, not which YOLO or tracker is best. Pick one pipeline, test the layer on it.
 
