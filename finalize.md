@@ -1,8 +1,6 @@
----
-
 ## PART 1: ADVISER CONSULTATION RECAP
 
-1. **The overall idea is approved.** Checking if surrounding vehicles are also stationary before confirming a violation is good.
+1. **The overall idea is approved.** Checking if surrounding vehicles are also stationary before confirming a violation is good. He signed off on continuation.
 
 2. **No arbitrary thresholds.** The 5-pixel displacement threshold was questioned. He wants parameters grounded in something meaningful, possibly tied to real-life measurement like actual vehicle speed, taking into account camera angle, height, or some formula for pixel-to-distance conversion. Not just a number we picked. We will fix the default value to make it more grounded, but we will still have a separate parameter sensitivity analysis to test what is the most optimal pixel displacement threshold.
 
