@@ -244,11 +244,15 @@ One paragraph. Challenges fall into environmental conditions and occlusion, dete
 
 Two paragraphs. Detection using YOLO variants consistently achieves above 85% accuracy. Tracking using DeepSORT and OC-SORT enables persistent vehicle identification. The dominant decision logic is zone membership combined with temporal threshold. Challenges remain across all pipeline stages. Context-aware approaches are emerging but each uses a different type of contextual information.
 
+(No need to follow the paragraph count)
+
 ---
 
 ### 2.5.2 — Research Focus
 
 Three paragraphs. First: the problem of non-parking stationary vehicles appears across multiple independent studies — name the evidence papers and what each found. Second: existing responses all evaluate the candidate against a fixed external reference; none uses surrounding vehicle motion state as a decision input. Third: this study proposes a context-aware decision logic layer that assesses surrounding vehicle displacement data from the tracking module before confirming a violation. The following chapter describes the methodology.
+
+(No need to follow the paragraph count)
 
 ---
 
