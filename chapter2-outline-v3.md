@@ -4,7 +4,7 @@
 
 **Opening paragraph (no section number):**
 
-One introductory paragraph stating that this chapter reviews 37 (No need to actually mentioned the count) studies on computer vision-based illegal parking detection published between 2009 and 2025. The review examines how each system detects vehicles, tracks vehicles, decides whether a violation occurred, and what challenges were reported. Briefly note that the studies span fixed CCTV, dashcam, UAV, and crowdsensing platforms, but that this study focuses on fixed-camera systems. No table. No subsection.
+One introductory paragraph stating that this chapter reviews 37 (No need to actually mention the paper count) studies on computer vision-based illegal parking detection published between 2009 and 2025. The review examines how each system detects vehicles, tracks vehicles, decides whether a violation occurred, and what challenges were reported. Briefly note that the studies span fixed CCTV, dashcam, UAV, and crowdsensing platforms, but that this study focuses on fixed-camera systems. No table. No subsection.
 
 ---
 
