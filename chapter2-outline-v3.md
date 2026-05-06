@@ -141,7 +141,7 @@ Explain the standard approach: a restricted zone is defined (usually as a polygo
 - Real-Time Illegal Parking Detection Algorithm in Urban Environments (tire-to-line spatial relationship)
 - Special Vehicle Classification Algorithm-Based System for Dedicated Parking Zone Violation Detection in South Korea (EV symbol/disability sign detection)
 
-**How to write it:**
+**How to write it (Old writing guide):**
 
 Some systems add criteria beyond zone membership and temporal threshold. Cover each type briefly — vehicle type classification, license plate recognition, spatial relationship analysis (tire-to-line, wheel-to-marking), ontological reasoning, centerline filtering. Group by type with multi-citation. The reader should notice that these extensions all evaluate the candidate vehicle against a fixed external reference (its type, its plate, its position relative to a line) rather than against the behavior of other vehicles.
 
