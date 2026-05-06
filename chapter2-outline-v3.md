@@ -119,9 +119,9 @@ Explain the standard approach: a restricted zone is defined (usually as a polygo
 
 ---
 
-### 2.3.2 — Extended Decision Criteria
+### 2.3.2 — Extended Decision Criteria - Rename to --> Additional Decision Criteria
 
-**Papers:**
+**Papers (Old list):** 
 - A computer vision-based roadside occupation surveillance system for intelligent transport in smart cities
 - A new curb lane monitoring and illegal parking impact estimation approach based on queueing theory and computer vision
 - Deep Learning-Based Stopped Vehicle Detection Method Utilizing In-Vehicle Dashcams
@@ -133,9 +133,25 @@ Explain the standard approach: a restricted zone is defined (usually as a polygo
 - Special Vehicle Classification Algorithm-Based System for Dedicated Parking Zone Violation Detection in South Korea
 - Traffic Violation Detection System
 
+**Updated paper lists:**
+- A computer vision-based roadside occupation surveillance system for intelligent transport in smart cities (vehicle type → loading activity)
+- Development and Validation of an Instance Segmentation-Based System for Illegal Parking Violation Detection (distance from vehicle to red line)
+- Illegal Parking Detection Based on Multi-Task Driving Perception (drivable area and lane segmentation concatenated with vehicle features)
+- Motorcycle Parking Violation Detection System Using YOLOv7 with Region of Interest Mapping and Object Area Calculation (area overlap percentage + rider presence/absence)
+- Real-Time Illegal Parking Detection Algorithm in Urban Environments (tire-to-line spatial relationship)
+- Special Vehicle Classification Algorithm-Based System for Dedicated Parking Zone Violation Detection in South Korea (EV symbol/disability sign detection)
+
 **How to write it:**
 
 Some systems add criteria beyond zone membership and temporal threshold. Cover each type briefly — vehicle type classification, license plate recognition, spatial relationship analysis (tire-to-line, wheel-to-marking), ontological reasoning, centerline filtering. Group by type with multi-citation. The reader should notice that these extensions all evaluate the candidate vehicle against a fixed external reference (its type, its plate, its position relative to a line) rather than against the behavior of other vehicles.
+
+**Updated writing guide:**
+
+Some systems add criteria beyond zone membership and temporal threshold by examining the candidate vehicle's own properties. Cover each type briefly — vehicle type classification, spatial relationship analysis (tire-to-line, wheel-to-marking, distance to red line), area overlap percentage, rider presence/absence, and EV/disability symbol detection. Group by type with multi-citation. The reader should notice that these extensions all evaluate the candidate vehicle against a fixed external reference (its type, its position relative to a line, its overlap with a zone) rather than against the behavior of other vehicles in the scene.
+
+**Reason for changes:**
+
+License plate recognition was removed because in all reviewed papers, LPR is a post-decision output used for identifying the violator after the violation is already detected, not a criterion for deciding whether a violation occurred. The distinction between 2.3.2 and 2.3.3 was also clarified: 2.3.2 covers systems that examine the candidate vehicle's own properties, while 2.3.3 covers systems that look beyond the candidate to the surrounding scene context.
 
 ---
 
