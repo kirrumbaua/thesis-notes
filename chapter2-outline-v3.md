@@ -133,7 +133,7 @@ Explain the standard approach: a restricted zone is defined (usually as a polygo
 - Special Vehicle Classification Algorithm-Based System for Dedicated Parking Zone Violation Detection in South Korea
 - Traffic Violation Detection System
 
-**Updated paper lists:**
+**Updated paper list:**
 - A computer vision-based roadside occupation surveillance system for intelligent transport in smart cities (vehicle type → loading activity)
 - Development and Validation of an Instance Segmentation-Based System for Illegal Parking Violation Detection (distance from vehicle to red line)
 - Illegal Parking Detection Based on Multi-Task Driving Perception (drivable area and lane segmentation concatenated with vehicle features)
