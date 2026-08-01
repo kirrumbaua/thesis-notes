@@ -1,9 +1,0 @@
-
-**Text for Section 2.4.1 (Standard Zone and Threshold):**
-"While most frameworks continuously track vehicles over a short duration, some systems rely on larger, disjointed temporal gaps. For instance, Paode et al. [Automated Illegal Parking Fine System Using YOLOv8 and PaddleOCR on the Cloud] utilized a strict 5-minute interval between two distinct cloud-uploaded video sequences, confirming a violation only if an identical license plate persisted across both timestamps."
-
-**Text for Section 2.4.2 (Additional Decision Criteria):**
-"Similarly, Tsai and Zhou [Dashcam-Based Illegal Parking Detection Using Two-Stage Pseudo-Labeling and End-to-End Deep Learning Framework] avoided temporal tracking entirely by calculating the shortest Euclidean pixel distance between a vehicle's bounding box and a semantically segmented red-line road marking, executing a violation flag if the spatial proximity fell below a strict 5-pixel threshold."
-
-**Text for Section 2.4.3 (Context-Aware Approaches):**
-"In aerial surveillance contexts, Gong et al. [Unauthorized Expressway Parking Detection Based on Spatiotemporal Analysis of Vehicle-Structure Distances Using UAV Aerial Images] demonstrated a structured approach to scene-level verification by calculating the motion state of a target vehicle relative to static roadside structures, such as gantries and signs. To filter out tracking noise caused by the forward movement of the UAV, the system computed a Parking Support Ratio representing the proportion of static structures in the scene that statistically confirmed the candidate vehicle was stationary over a rolling 4-second window. The framework mechanically required this ratio to exceed a predefined threshold before a violation could be confirmed. While highly effective at neutralizing camera motion, the verification logic remains structurally bound to the visual presence of static geometric infrastructure within the camera's field of view."
