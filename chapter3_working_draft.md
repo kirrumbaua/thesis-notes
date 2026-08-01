@@ -16,12 +16,7 @@ _Figure 3.1. Conceptual framework of the proposed context-aware spatiotemporal c
 
 ### 3.2.1 Test Site
 
-The recording location will be [test site name and description to be inserted upon site confirmation]. The selected site satisfies the following criteria:
-
-1. A legally designated no-parking zone, established either by posted signage or by statutory restriction under Republic Act No. 4136 (Land Transportation and Traffic Code of the Philippines), which prohibits parking within an intersection, on a crosswalk, within six meters of a curb-line intersection, in front of a driveway, or in a manner that blocks a designated driving lane.
-2. No traffic signal at the immediate recording location. Without a signal head in the camera's field of view, signal-state-based suppression methods [19] are inapplicable, necessitating reliance on the dynamic behavior of surrounding vehicles.
-3. Sufficient traffic volume during the recording period to ensure that multiple vehicles are simultaneously visible for the majority of recording time.
-4. A physical vantage point permitting elevated camera placement to minimize inter-vehicle occlusion.
+The recording location will be [test site name and description to be inserted upon site confirmation]. The selected site must satisfy four primary criteria to ensure the structural validity of the dataset. First, it must encompass a legally designated no-parking zone, established either by posted signage or by statutory restriction under Republic Act No. 4136 (Land Transportation and Traffic Code of the Philippines), which prohibits parking within an intersection, on a crosswalk, within six meters of a curb-line intersection, in front of a driveway, or in a manner that blocks a designated driving lane. Second, the immediate recording location must lack a traffic signal. Because signal-state-based suppression methods [19] require a signal head within the camera's field of view, their inapplicability forces the system to rely exclusively on the dynamic behavior of surrounding vehicles. Third, the site must exhibit sufficient traffic volume during the recording period to ensure that multiple vehicles are simultaneously visible for the majority of the recording duration, providing the necessary data for context extraction. Finally, the environment must offer a physical vantage point that permits elevated camera placement, which is critical for minimizing inter-vehicle occlusion.
 
 The restricted zone (Region of Interest) is defined as a closed polygon drawn once onto the camera's coordinate space during setup. The polygon boundaries are spatially grounded in the statutory definitions of RA 4136, eliminating dependence on the visibility of physical paint or signage for zone definition.
 
@@ -183,7 +178,7 @@ where $t_{\text{end}}$ is $t_{\text{trig}} + W \times \text{fps}$, or the frame 
 | Surrounding Vehicle Count           | $C$               | Integer | $\geq 0$     | Snapshot   |
 | Mean Surrounding Displacement       | $\bar{d}$         | Float   | $\geq 0$ m   | Snapshot   |
 | Surrounding Displacement Std. Dev.  | $\sigma_d$        | Float   | $\geq 0$ m   | Snapshot   |
-| Ratio Change                        | $\Delta R$        | Float   | [−1.0, +1.0] | Monitoring |
+| Ratio Change                        | $\Delta R$        | Float   | [-1.0, +1.0] | Monitoring |
 | Candidate Post-Trigger Displacement | $d_{\text{cand}}$ | Float   | $\geq 0$ m   | Monitoring |
 
 _Table 3.3. Feature vector specification. Snapshot features are computed at the trigger frame. Monitoring features are computed after a 15-second observation window following the trigger._
@@ -210,13 +205,13 @@ Table 3.4 consolidates all fixed and empirically determined parameters in the pr
 
 | Parameter                      | Symbol                | Value                  | Justification                                       |
 | ------------------------------ | --------------------- | ---------------------- | --------------------------------------------------- |
-| Resolution                     | —                     | 1920 × 1080            | Device specification                                |
+| Resolution                     | N/A                   | 1920 × 1080            | Device specification                                |
 | Frame rate                     | fps                   | 30                     | Native recording rate; no downsampling              |
 | Temporal trigger threshold     | $T$                   | 60 s                   | Literature consensus [8, 18, 29, 36] |
 | Lookback window                | $N$                   | 3 s (90 frames)        | Motion at 1.4 m/s covers 4.2 m in 3 s [59] |
 | Stationary threshold           | $\varepsilon_s$       | Empirically determined | Depth-dependent pipeline noise calibration (Section 3.4.4) |
 | Monitoring window              | $W$                   | 15 s                   | Upstream extraction parameter; sensitivity assessed in Section 3.6.6 |
-| Detection confidence threshold | —                     | 0.25                   | Ultralytics YOLOv8 default [57] |
+| Detection confidence threshold | N/A                   | 0.25                   | Ultralytics YOLOv8 default [57] |
 | IoU association threshold      | $\sigma_{\text{IoU}}$ | 0.5                    | Adopted from NMS threshold range [54, 57] |
 | Track confirmation window      | $n_{\text{init}}$     | 3 frames               | Empirical default; prevents single-frame false positives |
 | Track termination window       | $t_{\text{lost}}$     | 5 frames               | Bridges momentary misses; avoids ghost tracks (Section 3.4.2) |
@@ -255,7 +250,7 @@ A randomly selected 20% subset of triggered events will be independently annotat
 
 $$\kappa = \frac{p_o - p_e}{1 - p_e}$$
 
-where $p_o$ is the observed agreement and $p_e$ is the expected agreement by chance. A minimum $\kappa \geq 0.80$ is targeted, corresponding to the upper boundary of "Substantial" agreement (0.61–0.80) and the threshold for "Almost Perfect" agreement (0.81–1.00) [61]. If agreement falls below this threshold, disagreements will be adjudicated and the operational definition refined before re-annotation.
+where $p_o$ is the observed agreement and $p_e$ is the expected agreement by chance. A minimum $\kappa \geq 0.80$ is targeted, corresponding to the upper boundary of "Substantial" agreement (0.61 to 0.80) and the threshold for "Almost Perfect" agreement (0.81 to 1.00) [61]. If agreement falls below this threshold, disagreements will be adjudicated and the operational definition refined before re-annotation.
 
 ---
 
@@ -303,7 +298,7 @@ The proposed method will be compared against a reimplementation of the detection
 
 To enable a fair and controlled comparison, the research team will reimplement Abella et al.'s composite-class detection logic and apply it to the same video footage used to evaluate the proposed method. Both methods will be tested under identical conditions, specifically, the same camera and recording setup, the same recording resolution and frame rate, the same YOLOv8 architecture version, and the same ground truth event annotations. This controlled same-data design ensures that any measured performance difference is attributable to the decision method itself rather than to differences in test conditions.
 
-The reimplementation procedure follows Abella et al.'s published methodology. Training images will be collected and annotated by the research team at the test site using Abella et al.'s described annotation format, specifically COCO-format bounding boxes. The reimplemented model will be trained to detect two categories of classes. The base classes consist of car, vehicle, motorcycle, person, and no-parking sign. The composite classes, which serve as the violation indicator, consist of vehicle-human and vehicles-human-no-parking-sign. Where Abella et al.'s original paper does not specify an implementation detail, including the detection confidence threshold, input image size, or exact train-validation-test split ratio, the research team will apply standard defaults and document these choices explicitly, since the original paper does not report them.
+The reimplementation procedure meticulously adheres to Abella et al.'s published methodology. Training images are collected and annotated by the research team at the test site employing the described annotation format, specifically COCO-format bounding boxes. The reimplemented model is trained to recognize two distinct conceptual categories of classes. The foundational base classes consist of standard object detections, including cars, generic vehicles, motorcycles, persons, and no-parking signs. Concurrently, the model detects composite classes that function as the direct violation indicator, specifically identifying the spatial co-occurrence of a vehicle with a human, as well as the tripartite co-occurrence of a vehicle, a human, and a no-parking sign. In instances where Abella et al.'s original manuscript omits critical implementation details, such as the detection confidence threshold, the input image dimensions, or the exact data split ratio for training and validation, the research team applies standard empirical defaults. These parameters are documented explicitly to ensure complete reproducibility of the reimplemented baseline.
 
 Because Abella et al.'s method produces frame-level detections while the proposed method produces event-level classifications, the reimplemented method's output must be aggregated to the event level to enable fair comparison. The observation window for each event spans from the trigger frame $t_{\text{trig}}$ through the end of the monitoring period $t_{\text{trig}} + W \times \text{fps}$. For each triggered event in the ground truth, the aggregation procedure checks whether the composite violation class (vehicles-human-no-parking-sign) is detected in any frame within that event's observation window. If at least one composite detection occurs within the window, the reimplemented method classifies the event as a violation. If no composite detection occurs in any frame within the window, the event is classified as a non-violation. Both methods are then evaluated against the same event-level ground truth labels using the metrics defined in Table 3.7.
 
@@ -315,11 +310,7 @@ A methodological distinction exists in the violation definitions used by the two
 
 ### 3.5.5 Feature Importance and Ablation
 
-To interpret the trained XGBoost model, feature importance is measured using the average gain: the mean improvement in the objective function contributed by a feature across all trees in which it appears. Importance scores are reported as a ranked bar chart to provide interpretability into which aspects of the traffic context the classifier relies on most heavily.
-
-[Figure 3.5 placeholder]
-
-_Figure 3.5. Feature importance ranking from the trained XGBoost model (placeholder)._
+To interpret the trained XGBoost model, feature importance is quantified using the average gain, which calculates the mean improvement in the objective function contributed by a specific feature across all trees in which it appears. These importance scores are subsequently reported in the experimental results to provide interpretability regarding which aspects of the temporal traffic context the classifier relies on most heavily to form its decision boundaries.
 
 An ablation study is conducted to assess the contribution of individual feature groups, where the classifier is retrained and evaluated under the following feature subsets using the same 5-fold cross-validation protocol:
 
@@ -341,11 +332,7 @@ A sensitivity analysis examines the effect of key extraction parameters on the p
 | Stationary threshold ($\varepsilon_s$) | 1.5× noise ceiling | 0.5×, 1.0×, 1.5×, 2.0× noise ceiling |
 | Lookback window ($N$)                  | 3 s                | 1, 2, 3, 5 s                         |
 
-_Table 3.9. Parameter sensitivity analysis. Results are reported as F1-score at each tested value._
-
-[Figure 3.6 placeholder]
-
-_Figure 3.6. Parameter sensitivity curves showing F1-score as a function of each extraction parameter (placeholder)._
+_Table 3.9. Parameter sensitivity analysis configurations._
 
 ---
 
