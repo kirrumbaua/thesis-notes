@@ -25,7 +25,7 @@ Fixed-camera systems occupy a structurally advantageous position relative to mob
 Based on the limitations identified in existing computer vision-based illegal parking detection frameworks, this study seeks to answer the following research questions:
 
 - How effectively can the aggregate spatiotemporal motion data of surrounding tracked vehicles, specifically modeled through a 6-dimensional feature vector ($R, C, \bar{d}, \sigma_d, \Delta R, d_{\text{cand}}$), serve as a decision input for a trained classifier to differentiate genuine illegal parking from legitimate collective traffic stops, without relying on fixed external infrastructure?
-- How does the proposed context-aware spatiotemporal classifier perform compared to a state-of-the-art, single-frame spatial co-occurrence baseline [1] in terms of precision, recall, F1-score, and false positive reduction under real-world traffic conditions?
+- How does the proposed context-aware spatiotemporal classifier perform compared to a single-frame spatial co-occurrence baseline [1] in terms of precision, recall, F1-score, and false positive reduction?
 
 ## Objectives
 
