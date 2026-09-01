@@ -320,10 +320,5 @@ A parameter sensitivity analysis examines the robustness of the proposed pipelin
 
 _Table 3.9. Parameter sensitivity analysis configurations._
 
----
-
-## 3.6 Ethical Considerations
-
-The recorded footage captures public road scenes that may include identifiable vehicles and pedestrians. No personally identifiable information (license plate numbers, faces) will be extracted, stored, or used at any stage of the system, which processes only bounding box coordinates and class labels. Raw footage will be stored on encrypted local storage accessible only to the research team and will not be published or uploaded to any public repository. Any frames or screenshots included in the manuscript will have license plates and faces blurred. The study will comply with the university's research ethics requirements and with Republic Act No. 10173 (Data Privacy Act of 2012).
 
 
