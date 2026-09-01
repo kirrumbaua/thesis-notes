@@ -6,7 +6,7 @@ The proposed system processes fixed-camera video through a three-stage sequentia
 
 [Figure 3.1 placeholder]
 
-_Figure 3.1. Conceptual framework of the proposed context-aware spatiotemporal classification pipeline, showing the data flow from raw video input through the Vision Pipeline, Event Trigger and Feature Extraction, and Event Classifier stages to the final binary output._
+_Figure 3.1. Conceptual framework of the proposed spatiotemporal classification pipeline._
 
 ---
 
@@ -67,7 +67,7 @@ The system architecture consists of three sequential processing stages. Each sta
 
 [Figure 3.2 placeholder]
 
-_Figure 3.2. System architecture showing the three-stage pipeline: Vision Pipeline (per-frame detection, tracking, coordinate transformation), Event Trigger and Feature Extraction (event-driven), and Event Classifier (per-event binary prediction)._
+_Figure 3.2. Sequential three-stage system architecture._
 
 ### 3.3.1 Vehicle Detection
 
@@ -171,7 +171,7 @@ where $t_{\text{end}}$ denotes $t_{\text{trig}} + W \times \text{fps}$ (or the f
 | Ratio Change                        | $\Delta R$        | Float   | [-1.0, +1.0] | Monitoring |
 | Candidate Post-Trigger Displacement | $d_{\text{cand}}$ | Float   | $\geq 0$ m   | Monitoring |
 
-_Table 3.3. Feature vector specification. Snapshot features are computed at the trigger frame. Monitoring features are computed after a 15-second observation window following the trigger._
+_Table 3.3. Feature vector specification._
 
 Regarding feature completeness, the vector intentionally omits static spatial attributes (e.g., distance to curb or lane markings), adhering strictly to lightweight edge-tracking principles without requiring computationally expensive lane-segmentation networks [5, 42]. Each feature represents an independent mathematical derivation: $R$ derives from binarized states, $\bar{d}$ from continuous displacements, $\sigma_d$ from second-order dispersion, $\Delta R$ from temporal progression, and $d_{\text{cand}}$ from candidate-specific motion. This formulation completely avoids linear dependencies and multicollinearity [60]. In the isolated edge case where $|\mathcal{S}(t_{\text{trig}})| = 0$, the classifier is bypassed and the event defaults to standard temporal threshold logic, which is logged separately from model evaluation.
 
@@ -206,7 +206,7 @@ _Table 3.4. Complete system parameter summary._
 
 [Figure 3.4 placeholder]
 
-_Figure 3.4. Complete system pipeline diagram with all parameters annotated at their respective processing stages._
+_Figure 3.4. Complete system pipeline diagram._
 
 ---
 
@@ -216,7 +216,7 @@ _Figure 3.4. Complete system pipeline diagram with all parameters annotated at t
 
 Annotation is performed at the event level, not the frame level. The set of events to be annotated is determined by running the Vision Pipeline and Event Trigger stages on the recorded footage and collecting all generated trigger events.
 
-For each trigger event, the annotator reviews the video segment from 30 seconds before the trigger frame through the end of the monitoring window. Table 3.5 defines the annotation fields.
+For each trigger event, the annotator reviews the video segment from 30 seconds before the trigger frame through the end of the monitoring window. Table 3.5 defines the ground truth annotation fields, where specific stop reasons are recorded exclusively for non-violation events.
 
 | Field       | Type        | Description                                              |
 | ----------- | ----------- | -------------------------------------------------------- |
@@ -226,7 +226,7 @@ For each trigger event, the annotator reviews the video segment from 30 seconds 
 | Stop reason | Categorical | Congestion / Pedestrian yielding / Loading / Other / N/A |
 | Notes       | Free text   | Annotator remarks on ambiguous cases                     |
 
-_Table 3.5. Ground truth annotation fields. Stop reason is recorded for Non-Violation events only; Violation events are set to N/A._
+_Table 3.5. Ground truth annotation fields._
 
 An event is formally annotated as a Violation when a candidate vehicle maintains a stationary dwell status within the restricted zone throughout the observation window in the absence of any observable external traffic impediment, such as simultaneous surrounding queueing, active pedestrian right-of-way crossing, or authorized curb operations. This protocol aligns with the statutory legal framing of Section 46 of Republic Act No. 4136, wherein stationary vehicular presence within designated prohibited zones (such as intersections, pedestrian crossings, or designated curb areas) establishes a prima facie infraction unless observable operational necessity is documented.
 
@@ -250,7 +250,7 @@ Random fold assignment may place temporally adjacent events into different folds
 
 ### 3.5.2 Hyperparameter Tuning
 
-XGBoost hyperparameters are tuned via grid search with 3-fold cross-validation nested within each outer training fold. The search space is defined in Table 3.6.
+XGBoost hyperparameters are tuned via grid search with 3-fold cross-validation nested within each outer training fold. The search space is defined in Table 3.6. The parameter configuration yielding the highest mean F1-score across inner cross-validation folds is selected to train the final model for each outer evaluation fold.
 
 | Hyperparameter         | Search values  |
 | ---------------------- | -------------- |
@@ -259,13 +259,13 @@ XGBoost hyperparameters are tuned via grid search with 3-fold cross-validation n
 | Learning rate ($\eta$) | 0.01, 0.1, 0.3 |
 | Minimum child weight   | 1, 3, 5        |
 
-_Table 3.6. XGBoost hyperparameter search space. The combination yielding the highest mean F1-score on the inner cross-validation is selected for each outer fold._
+_Table 3.6. XGBoost hyperparameter search space._
 
 No feature scaling or normalization is applied, as gradient-boosted decision trees are invariant to monotonic feature transformations: split decisions are based on threshold comparisons over feature values, and the relative ordering of data points is preserved under any monotonic rescaling [60].
 
 ### 3.5.3 Evaluation Metrics
 
-Classification performance is evaluated using precision, recall, F1-score, and false positive rate, computed from the standard binary confusion matrix.
+Classification performance is evaluated using precision, recall, F1-score, and false positive rate, computed from standard binary confusion matrix outcomes. In this operational context, True Positives (TP) represent correctly flagged genuine violations, False Positives (FP) denote legitimate stops incorrectly flagged as violations, True Negatives (TN) denote correctly suppressed legitimate stops, and False Negatives (FN) represent genuine violations that the system failed to identify. Table 3.7 outlines the mathematical definitions of these metrics.
 
 | Metric              | Definition                                                                              |
 | ------------------- | --------------------------------------------------------------------------------------- |
@@ -274,7 +274,7 @@ Classification performance is evaluated using precision, recall, F1-score, and f
 | F1-Score            | $2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$ |
 | False Positive Rate | $\frac{FP}{FP + TN}$                                                                    |
 
-_Table 3.7. Evaluation metrics. TP: system correctly flags a genuine violation. FP: system incorrectly flags a legitimate stop. TN: system correctly suppresses a legitimate stop. FN: system fails to flag a genuine violation._
+_Table 3.7. Evaluation metrics._
 
 Metrics for the proposed method are reported as mean ± standard deviation across the five cross-validation folds. Precision, recall, and F1-score are reported for each class individually (violation and non-violation) to ensure that performance differences are not masked by class-level aggregation.
 
@@ -298,7 +298,7 @@ A methodological distinction exists in the violation definitions used by the two
 
 To interpret the trained XGBoost model, feature importance is quantified using the average gain, which calculates the mean improvement in the objective function contributed by a specific feature across all trees in which it appears. These importance scores are subsequently reported in the experimental results to provide interpretability regarding which aspects of the temporal traffic context the classifier relies on most heavily to form its decision boundaries.
 
-An ablation study is conducted to assess the contribution of individual feature groups, where the classifier is retrained and evaluated under the following feature subsets using the same 5-fold cross-validation protocol:
+An ablation study evaluates the marginal contribution of individual feature subsets. As specified in Table 3.8, the classifier is retrained and evaluated under snapshot-only, monitoring-only, and full feature configurations using the identical stratified 5-fold cross-validation protocol.
 
 | Configuration            | Features                                                                 |
 | ------------------------ | ------------------------------------------------------------------------ |
@@ -306,7 +306,7 @@ An ablation study is conducted to assess the contribution of individual feature 
 | Monitoring features only | $\Delta R, \; d_{\text{cand}}$                                           |
 | Full feature vector      | All six features                                                         |
 
-_Table 3.8. Ablation study configurations. Each configuration is evaluated using the full cross-validation protocol to assess the marginal contribution of snapshot features and monitoring features._
+_Table 3.8. Ablation study configurations._
 
 ### 3.5.6 Parameter Sensitivity Analysis
 
