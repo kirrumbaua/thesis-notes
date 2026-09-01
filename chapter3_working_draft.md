@@ -244,13 +244,13 @@ where $p_o$ is the observed agreement and $p_e$ is the expected agreement by cha
 
 ### 3.5.1 Cross-Validation
 
-Due to the anticipated limited size of the event dataset (constrained by the number of qualifying trigger events in the recording period), a fixed train-test split risks high variance in performance estimates. The study uses stratified 5-fold cross-validation. The annotated dataset is divided into five equal folds, stratified by label to preserve the class distribution in each fold. In each iteration, four folds serve as the training set and one fold as the held-out evaluation set. The process repeats five times, and metrics are reported as the mean ± standard deviation across folds.
+Due to the anticipated limited size of the event dataset (constrained by the number of qualifying trigger events in the recording period), a fixed train-test split risks high variance in performance estimates. The study utilizes stratified 5-fold cross-validation, following established machine learning evaluation standards for variance reduction and class balance preservation on small datasets [62]. The annotated dataset is partitioned into five equal folds, stratified by label to ensure that each fold mirrors the overall class proportion. In each iteration, four folds serve as the training set and one fold as the held-out evaluation set. The process repeats five times, and metrics are reported as the mean ± standard deviation across folds [62].
 
 Random fold assignment may place temporally adjacent events into different folds, potentially introducing optimistic bias due to correlated environmental conditions such as lighting or traffic density. This limitation is retained as the dataset size is insufficient to support temporal blocking without introducing unacceptable variance.
 
 ### 3.5.2 Hyperparameter Tuning
 
-XGBoost hyperparameters are tuned via grid search with 3-fold cross-validation nested within each outer training fold. The search space is defined in Table 3.6. The parameter configuration yielding the highest mean F1-score across inner cross-validation folds is selected to train the final model for each outer evaluation fold.
+XGBoost hyperparameters are tuned via grid search using a nested cross-validation framework, with 3-fold cross-validation executed within each outer training fold. As established by Varma and Simon [63], nesting the model selection and hyperparameter optimization loops within the training partition is essential to prevent data leakage and selection bias from artificially inflating performance estimates. The hyperparameter search space is defined in Table 3.6. The parameter configuration yielding the highest mean F1-score across inner cross-validation folds is selected to train the final model for each outer evaluation fold.
 
 | Hyperparameter         | Search values  |
 | ---------------------- | -------------- |
@@ -265,7 +265,7 @@ No feature scaling or normalization is applied, as gradient-boosted decision tre
 
 ### 3.5.3 Evaluation Metrics
 
-Classification performance is evaluated using precision, recall, F1-score, and false positive rate, computed from standard binary confusion matrix outcomes. In this operational context, True Positives (TP) represent correctly flagged genuine violations, False Positives (FP) denote legitimate stops incorrectly flagged as violations, True Negatives (TN) denote correctly suppressed legitimate stops, and False Negatives (FN) represent genuine violations that the system failed to identify. Table 3.7 outlines the mathematical definitions of these metrics.
+Classification performance is evaluated using precision, recall, F1-score, and false positive rate (FPR), derived from standard binary confusion matrix formulations in automated detection and surveillance [64]. In this operational context, True Positives (TP) represent correctly flagged genuine violations, False Positives (FP) denote legitimate stops incorrectly flagged as violations, True Negatives (TN) denote correctly suppressed legitimate stops, and False Negatives (FN) represent genuine violations that the system failed to identify. Table 3.7 outlines the mathematical definitions of these metrics.
 
 | Metric              | Definition                                                                              |
 | ------------------- | --------------------------------------------------------------------------------------- |
@@ -296,7 +296,7 @@ A methodological distinction exists in the violation definitions used by the two
 
 ### 3.5.5 Feature Importance and Ablation
 
-To interpret the trained XGBoost model, feature importance is quantified using the average gain, which calculates the mean improvement in the objective function contributed by a specific feature across all trees in which it appears. These importance scores are subsequently reported in the experimental results to provide interpretability regarding which aspects of the temporal traffic context the classifier relies on most heavily to form its decision boundaries.
+To interpret the trained XGBoost model, feature importance is quantified using the average gain, which calculates the mean improvement in the regularized objective function contributed by a specific feature across all trees in which it appears [60]. These importance scores are subsequently reported in the experimental results to provide interpretability regarding which aspects of the temporal traffic context the classifier relies on most heavily to form its decision boundaries.
 
 An ablation study evaluates the marginal contribution of individual feature subsets. As specified in Table 3.8, the classifier is retrained and evaluated under snapshot-only, monitoring-only, and full feature configurations using the identical stratified 5-fold cross-validation protocol.
 
@@ -310,7 +310,7 @@ _Table 3.8. Ablation study configurations._
 
 ### 3.5.6 Parameter Sensitivity Analysis
 
-A sensitivity analysis examines the effect of key extraction parameters on the proposed method's performance. For each parameter, the full pipeline (feature extraction, classifier training, and 5-fold cross-validation) is re-executed with the modified value while all other parameters are held at their defaults.
+A parameter sensitivity analysis examines the robustness of the proposed pipeline to variations in key extraction hyperparameters [65]. Following standard sensitivity analysis principles [65], a one-at-a-time (OAT) parameter perturbation is conducted, wherein the full pipeline (feature extraction, classifier training, and 5-fold cross-validation) is re-executed with the modified parameter value while holding all other parameters fixed at their calibrated defaults.
 
 | Parameter                              | Default            | Test values                          |
 | -------------------------------------- | ------------------ | ------------------------------------ |
