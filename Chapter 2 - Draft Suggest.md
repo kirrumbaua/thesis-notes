@@ -127,22 +127,33 @@ Makes RQ1/RQ2 read as the evident next question rather than an abrupt pivot.
 
 ---
 
-### 1. Core Literature
-1, 9, 19, 27, 31, An et al./Prohibited Parking, 13, 49, 15/16, 33, 21.
+Here's the story, in order:
 
-### 2. Supporting Literature
-2, 22, 23, 36, 37, 41, 42, 45, 46, 48, 50, 11, 17, 18, 20, 24, 28, 29, 5, 6 or 51, 30, BS-YOLO, Wrong-side, Motorcycle-YOLOv12, Gao/Birch-Sussex-keypoint, 39.
+**1. Start with why anyone should care.**
+Illegal parking isn't just an annoyance — it costs cities money, causes congestion, makes manual enforcement impractical at scale. This is just throat-clearing, one page, to get the reader on board before the real argument starts.
 
-### 3. Excluded Literature
-32 (confirmed miscited/tangential — permitted-vehicle classification, not general violation detection), 34 (ontology/SPARQL, no comparable CV methodology), 51 or 6 (whichever isn't chosen for 2.1 — redundant with the other), 
-3, 4, 7, 10, 12, 14, 25, 26/SafeStreets, 29(if trimmed further), 35, 38, 43, 47, 52, RKF-YOLO, Onstreet_parking_space_localization, Hosmani — all standard single-frame or basic detection pipelines with no distinguishing contribution beyond what a stronger, already-cited paper covers; conceptual_framework.pdf excluded per your instruction.
+**2. Say what's already solved, so the reader knows what's *not* your problem.**
+Before you can decide if a vehicle is illegally parked, you first have to reliably *see* it — detect it, keep track of it across frames, even when it's partly hidden behind another car. That part of the puzzle is fairly mature. You cite papers showing this evolution (old-school background-subtraction methods → modern deep learning detectors) and specifically show that even the best of these still struggle with occlusion. Why include this? So that later, when you present your own system, nobody in the room thinks you're claiming to have solved occlusion too. You're saying: "detection is handled, this thesis is about what happens *after* detection."
 
-### 4. Research Gap Evidence
-Mapped in full in Stage 8: Claims 1, 2, 5, 6, 7 strongly supported as originally worded; Claims 3 and 4 supported only in corrected, narrower form (structural-limitation framing for Claim 3; "single external reference" not "collective behavior" for Claim 4).
+**3. Introduce the simplest possible way people have made the final decision — and show it breaking.**
+Once you can see a vehicle, the laziest way to decide "violation or not?" is to just check: is it inside a no-parking zone, in this one frame? That's it. Your baseline paper (Abella & Catedrilla) does almost exactly this, and you have their actual numbers: their precision for illegal parking drops to 0.75, with 509 false detections out of 2,803. That's not a hypothetical weakness — it's a documented one. This is the moment the reader goes "oh, I see the problem now."
 
-### 5. Recommended Chapter 2 Writing Flow
-2.1 (why this matters) → 2.2 (detection is maturing, scope your thesis around the decision layer) → 2.3 (the simplest decision rule, quantified failure — your baseline) → 2.4 (first attempted fix: fixed infrastructure, and its vulnerability) → 2.5 (second, more recent attempted fix: candidate-centric temporal/re-ID, and its structural blind spot) → 2.6 (mobile platforms validate external-agent motion, but only pairwise and hardcoded) → 2.7 (fixed cameras already have the geometric and tracking infrastructure to go further) → 2.8 (the general design pattern you propose has adjacent precedent) → 2.9 (synthesis into your Statement of the Problem).
+**4. Show the first real attempt at a smarter fix — and its weak point.**
+So researchers didn't stop there. Some added a smarter rule: "only flag a violation if the traffic light is red" or "only flag it if it's inside this exact drawn zone on the road." That's better! But notice the pattern — every one of these smarter rules depends on *seeing something fixed in the scene*: a traffic light, a painted zone, a lane marking. What happens if a truck blocks the camera's view of that traffic light, or the zone marking is worn away, or the camera is angled badly? The whole safety mechanism breaks. This is the first crack in the wall.
 
-### 6. Paper-to-Section Mapping
-As tabulated in Stage 7, with the redundancy trims applied above now folded in.
+**5. Show an even newer, cleverer attempt — and its weak point too.**
+More recent papers (2025–2026, so genuinely current) got smarter still: instead of depending on a fixed reference in the scene, they watch the *same car* over time — does it disappear and reappear? Does it look the same color/shape across frames despite lighting changes? This avoids the "fixed infrastructure" problem entirely. But here's the catch, and it's subtle: these methods are still only looking at *one car* — the one that might be parked. They have no way to tell the difference between "this car has been sitting still for 10 minutes because it's illegally parked" and "this car has been sitting still for 10 minutes because the whole street is gridlocked and it literally cannot move." Both look identical if all you're watching is that one car.
+
+**6. Point out that someone, somewhere, already had a good idea — just not here.**
+Now here's a twist that makes your argument sharper, not weaker: on *mobile* cameras (dashcams, phones), some researchers already realized "hey, maybe I should look at what's happening around the target car, not just the target car itself." That's promising! But when you actually read how they did it, it's very narrow — they only ever compare their own moving camera's motion to *one* other car, using a simple hardcoded number (like "if relative speed drops below X, call it stopped"). Nobody ever said "let me look at *all* the nearby cars together and learn a pattern from that."
+
+**7. Point out that fixed cameras are actually in the best position to do this — and nobody's doing it.**
+Here's where it gets satisfying: fixed cameras (the kind your thesis uses) don't have the messy "my own camera is also moving" problem that dashcams have. They already run tracking software that follows *every* car in the frame, all the time — that data is just sitting there, unused, thrown away after each frame. Fixed cameras also can be calibrated so pixel distances become real-world distances (via homography), which mobile cameras struggle to do reliably. So fixed cameras have both the ingredients and the stability to do something dashcams tried imperfectly — and yet no fixed-camera paper in the entire 62-paper review pulls in the *aggregate* motion of nearby vehicles to help decide if one specific car is a violation.
+
+**8. Reassure the reader that your approach isn't science fiction.**
+Just to show your idea isn't coming out of nowhere: you point to a couple of unrelated traffic papers (not about parking at all) that already prove the general recipe works — take a bunch of movement-based numbers, feed them into a trained model, get a smart decision out. That's the same basic idea your thesis uses, just never applied to this exact problem.
+
+**9. Land the plane.**
+By the end, the reader has walked: seeing is solved → the simplest decision rule fails → fixed-reference fixes are fragile → watching-one-car fixes still can't tell gridlock from guilt → someone tried watching neighboring cars but only clumsily, on the wrong platform → fixed cameras are perfectly positioned to do it properly and nobody has → and the general "feed movement data into a trained model" idea already works elsewhere. So your thesis's idea — build a 6-number snapshot of what's happening around a candidate car, and let a trained model (XGBoost) decide, instead of a hand-written rule — isn't a wild leap. It's the obvious next step nobody happened to take.
+
 
