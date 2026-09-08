@@ -1,6 +1,6 @@
 # Chapter 3: METHODOLOGY
 
-## 3.1 Conceptual Framework
+## Conceptual Framework
 
 The proposed system processes fixed-camera video through a three-stage sequential pipeline to classify individual vehicle events as illegal parking violations or legitimate traffic stops. In the initial stage, designated as the Vision Pipeline, the framework performs continuous per-frame vehicle detection, multi-object tracking, and real-world ground-plane coordinate transformation. In the second stage, the Event Trigger and Feature Extraction module monitors tracked vehicles within a legally defined restricted zone and, upon satisfaction of a temporal threshold, extracts a structured numeric feature vector that encodes the kinematic motion state of surrounding traffic alongside the candidate vehicle's post-trigger behavior. In the final stage, the Event Classifier processes this feature vector through a trained gradient-boosted decision tree model (XGBoost) to generate an automated binary prediction (violation or non-violation) for each triggered event, leveraging ambient collective context to filter out false alarms caused by traffic congestion or signal stoppages.
 
@@ -10,15 +10,17 @@ _Figure 3.1. Conceptual framework of the proposed spatiotemporal classification 
 
 ---
 
-## 3.2 Data Acquisition
+## Data Acquisition
 
-### 3.2.1 Test Site
+This section establishes the physical and geometric foundation of the data collection process. It outlines the selection criteria for the experimental test site, details the hardware specifications and camera mounting parameters used to capture traffic footage, and describes the two-stage calibration procedure required to rectify lens distortion and project image coordinates onto a metric ground plane.
+
+### Test Site
 
 The recording location will be [test site name and description to be inserted upon site confirmation]. The selected site must satisfy four primary criteria to ensure the structural validity of the dataset. First, it must encompass a legally designated no-parking zone, established either by posted signage or by statutory restriction under Republic Act No. 4136 (Land Transportation and Traffic Code of the Philippines), which prohibits parking within an intersection, on a crosswalk, within six meters of a curb-line intersection, in front of a driveway, or in a manner that blocks a designated driving lane. Second, the immediate recording location must lack a traffic signal, forcing the system to rely exclusively on the dynamic behavior of surrounding vehicles rather than external signal-state feeds or line-of-sight to physical signal heads. Third, the site must exhibit sufficient traffic volume during the recording period to ensure that multiple vehicles are simultaneously visible for the majority of the recording duration, providing the necessary data for context extraction. Finally, the environment must offer a physical vantage point that permits elevated camera placement, which is critical for minimizing inter-vehicle occlusion.
 
 The restricted zone (Region of Interest) is defined as a closed polygon drawn once onto the camera's coordinate space during setup. The polygon boundaries are spatially grounded in the statutory definitions of RA 4136, eliminating dependence on the visibility of physical paint or signage for zone definition.
 
-### 3.2.2 Recording Configuration
+### Recording Configuration
 
 Video footage will be recorded using an Apple iPhone 16 Pro mounted on a tripod at a fixed, elevated position overlooking the test site. Table 3.1 summarizes the recording parameters.
 
@@ -39,7 +41,7 @@ The camera will remain stationary throughout each recording session. No post-cap
 
 The recorded footage must contain sufficient events across four scenario categories: free-flowing traffic (vehicles passing without stopping), collective stops (multiple vehicles stationary simultaneously due to congestion or pedestrian yielding), genuine violations (vehicles illegally parked in the restricted zone), and mixed traffic (transitions between flowing and stopped states). If insufficient violation events occur naturally, controlled scenarios will be staged using a designated vehicle parked deliberately in the restricted zone while surrounding traffic continues. The proportion of staged events will be reported. Staged events may exhibit different surrounding traffic patterns compared to naturally occurring violations; this is a limitation of the data collection procedure.
 
-### 3.2.3 Camera Calibration
+### Camera Calibration
 
 Accurate displacement computation requires two sequential calibration procedures: intrinsic lens distortion correction and planar ground-plane homography estimation, both conducted once per physical camera installation.
 
@@ -61,15 +63,15 @@ Geometric fidelity is validated by computing the Euclidean error against at leas
 
 ---
 
-## 3.3 Proposed Method
+## Proposed Method
 
-The system architecture consists of three sequential processing stages. Each stage's output serves as the direct input to the next.
+The proposed system operates through a sequential three-stage architecture wherein each stage's output serves as the direct input to the next. The vision pipeline first performs per-frame vehicle detection, multi-object tracking, and planar coordinate transformation to extract continuous metric vehicle trajectories. The event trigger and feature extraction layer monitors vehicle dwell times within a statutory restricted zone and extracts a six-dimensional spatiotemporal feature vector upon trigger activation. Finally, the event classification layer processes these contextual features through a trained gradient-boosted decision tree (XGBoost) to classify candidate stops as illegal parking violations or legitimate traffic pauses. The following subsections detail each component of this processing pipeline, concluding with a consolidated summary of system operating parameters.
 
 [Figure 3.2 placeholder]
 
 _Figure 3.2. Sequential three-stage system architecture._
 
-### 3.3.1 Vehicle Detection
+### Vehicle Detection
 
 Object detection is performed using YOLOv8n (Nano), the smallest variant of the YOLOv8 architecture [Ultralytics YOLOv8 https://github.com/ultralytics/ultralytics], with 3.2 million parameters and 8.7 GFLOPs per inference pass. The model uses pretrained MS COCO weights [Microsoft COCO: Common Objects in Context https://doi.org/10.1007/978-3-319-10602-1_48] without fine-tuning. Only vehicle classes are retained: car (class 2), motorcycle (3), bus (5), and truck (7). All other detections are discarded.
 
@@ -77,7 +79,7 @@ A detection confidence threshold of 0.25 is applied, corresponding to the Ultral
 
 The Ultralytics YOLOv8 implementation outputs bounding box coordinates in the original image space (1920 × 1080), independent of the internal input resize, so no manual coordinate rescaling is required before homography transformation.
 
-### 3.3.2 Multi-Object Tracking
+### Multi-Object Tracking
 
 A multi-object tracker assigns and maintains a persistent Track ID for each vehicle across consecutive frames. The tracker uses IoU-based (Intersection over Union) frame-to-frame association [High-speed tracking-by-detection without using image information https://doi.org/10.1109/AVSS.2017.8078516], selected for its minimal computational overhead and its suitability for high-frame-rate fixed-camera scenarios where inter-frame vehicle displacement is small relative to bounding box size.
 
@@ -87,18 +89,9 @@ $$\text{IoU}(A, B) = \frac{|A \cap B|}{|A \cup B|}$$
 
 where $A$ and $B$ are the areas of the two bounding boxes. Detection-to-track assignment is performed by selecting the assignment that maximizes total IoU, subject to a minimum IoU threshold $\sigma_{\text{IoU}} = 0.5$. Bochinski et al. [High-speed tracking-by-detection without using image information https://doi.org/10.1109/AVSS.2017.8078516] define $\sigma_{\text{IoU}}$ as a tunable parameter that should be set in the same range as the detector's non-maximum suppression (NMS) threshold. The Ultralytics YOLOv8 NMS IoU threshold defaults to 0.45 [Ultralytics YOLOv8 https://github.com/ultralytics/ultralytics]; $\sigma_{\text{IoU}} = 0.5$ is adopted as a standard threshold value that requires detections to overlap at least half of their combined area with the existing track for association continuity. Detections with IoU below this threshold against all existing tracks are held as tentative for a confirmation period of $n_{\text{init}} = 3$ consecutive frames before being promoted to active tracks. This confirmation requirement prevents single-frame false-positive detections from immediately entering the surrounding vehicle set $\mathcal{S}(t)$ and corrupting the Stationary Ratio $R$. Active tracks not matched to any detection for $t_{\text{lost}} = 5$ consecutive frames (approximately 0.17 seconds at 30 fps) are terminated. This window is long enough to bridge momentary single-frame detection misses but short enough to avoid maintaining ghost tracks for vehicles that have left the scene. Terminated Track IDs are not reused.
 
-At 30 fps with a fixed camera, vehicles undergo small inter-frame displacements relative to their bounding box dimensions, producing high IoU overlap between consecutive frames. This high frame-to-frame overlap makes IoU-based association sufficient for maintaining track identity, avoiding the computational overhead of appearance descriptors or motion prediction models.
+At 30 fps with a fixed camera, vehicles undergo small inter-frame displacements relative to their bounding box dimensions, producing high IoU overlap between consecutive frames. This high frame-to-frame overlap makes IoU-based association sufficient for maintaining track identity, avoiding the computational overhead of appearance descriptors or motion prediction models. For each active vehicle, the tracker outputs a persistent Track ID, bounding box coordinates $(x, y, w, h)$, class label, and detection confidence score.
 
-| Output       | Type           | Description                         |
-| ------------ | -------------- | ----------------------------------- |
-| Track ID     | Integer        | Persistent identifier across frames |
-| Bounding box | $(x, y, w, h)$ | Position and dimensions in pixels   |
-| Class label  | Integer        | COCO class ID                       |
-| Confidence   | Float          | Detection score                     |
-
-_Table 3.2. Per-frame tracking outputs._
-
-### 3.3.3 Coordinate Transformation and Displacement Computation
+### Coordinate Transformation and Displacement Computation
 
 To project bounding box detections into real-world coordinates without introducing three-dimensional object height bias, the system extracts the bottom-center coordinate of each vehicle's bounding box:
 
@@ -112,13 +105,9 @@ $$d(v, t) = \sqrt{(X_t - X_{t-n})^2 + (Y_t - Y_{t-n})^2}$$
 
 The 3-second lookback duration is grounded in empirical traffic engineering standards for low-speed pedestrian and vehicular clearance [Field Studies of Pedestrian Walking Speed and Start-Up Time https://doi.org/10.1177/0361198196153800104]. In transportation research, comfortable walking speeds average approximately 1.2 to 1.4 m/s [Field Studies of Pedestrian Walking Speed and Start-Up Time https://doi.org/10.1177/0361198196153800104]; over an interval of 3 seconds, a vehicle crawling at even a minimal speed of 1.4 m/s travels 4.2 meters. This distance substantially exceeds the sensor noise floor, ensuring that actively moving vehicles are not misclassified as stationary. For tracks with an active lifespan shorter than $n$ frames, displacement is calculated relative to the track's initial frame; however, to maintain statistical integrity, vehicles with fewer than $n$ frames of tracking history are excluded from the surrounding vehicle pool $\mathcal{S}(t)$ during feature extraction, preventing uncalibrated early-track jitter from corrupting contextual metrics.
 
-### 3.3.4 Restricted Zone and Event Trigger
+### Restricted Zone and Event Trigger
 
 The enforcement Region of Interest (ROI) is defined as a closed polygon in undistorted image coordinates, established once during setup and grounded in the statutory provisions of Republic Act No. 4136. Spatial membership is evaluated continuously for every tracked vehicle using the ray casting point-in-polygon algorithm applied to the vehicle's bottom-center coordinate $p_{\text{bottom}}$.
-
-[Figure 3.3 placeholder]
-
-_Figure 3.3. Example restricted zone polygon overlaid on an undistorted frame from the test site._
 
 Within this restricted zone, a vehicle $v$ at frame $t$ is binarized as stationary when its measured displacement falls below a depth-calibrated threshold $\varepsilon_s(Y_t)$:
 
@@ -128,9 +117,9 @@ The stationary noise ceiling $\varepsilon_s(Y_t)$ is calibrated empirically usin
 
 To trigger an evaluation event, a per-vehicle dwell timer increments for each vehicle that maintains a stationary classification ($d(v, t) < \varepsilon_s$) within the restricted zone, resetting to zero whenever motion is detected. When the dwell timer reaches the temporal threshold $T = 60$ seconds, a trigger event is generated for that Track ID. The temporal trigger threshold $T = 60$ seconds is adopted as the operational benchmark for identifying stationary parking violations, ensuring that momentary operational pauses (such as pedestrian yielding, loading maneuvers, or transient intersection queueing) consistently resolve well below this temporal threshold under normal urban traffic flow.
 
-### 3.3.5 Feature Extraction
+### Feature Extraction
 
-Upon satisfaction of the temporal trigger threshold at frame $t_{\text{trig}}$, the system extracts a six-dimensional spatiotemporal feature vector structured across two observation phases: four snapshot features capturing instantaneous traffic context at $t_{\text{trig}}$, and two monitoring features evaluating temporal evolution over a subsequent monitoring window $W = 15$ seconds ($t_{\text{trig}} + W \times \text{fps}$). Let $\mathcal{S}(t)$ denote the set of all active surrounding vehicles at frame $t$, explicitly excluding the candidate vehicle and any vehicle with fewer than $n$ frames of tracking history (Section 3.3.3).
+Upon satisfaction of the temporal trigger threshold at frame $t_{\text{trig}}$, the system extracts a six-dimensional spatiotemporal feature vector structured across two observation phases: four snapshot features capturing instantaneous traffic context at $t_{\text{trig}}$, and two monitoring features evaluating temporal evolution over a subsequent monitoring window $W = 15$ seconds ($t_{\text{trig}} + W \times \text{fps}$). Let $\mathcal{S}(t)$ denote the set of all active surrounding vehicles at frame $t$, explicitly excluding the candidate vehicle and any vehicle with fewer than $n$ frames of tracking history (detailed in the Coordinate Transformation and Displacement Computation section).
 
 In the snapshot phase, the system first computes the Stationary Ratio $R(t)$, which quantifies the proportion of surrounding vehicles currently classified as stationary:
 
@@ -162,7 +151,7 @@ Finally, the Candidate Post-Trigger Displacement $d_{\text{cand}}$ evaluates the
 
 $$d_{\text{cand}} = \sqrt{(X_{t_{\text{end}}} - X_{t_{\text{trig}}})^2 + (Y_{t_{\text{end}}} - Y_{t_{\text{trig}}})^2}$$
 
-where $t_{\text{end}}$ denotes $t_{\text{trig}} + W \times \text{fps}$ (or the final frame of the track if terminated early). This feature ensures that candidates that resume transit during the monitoring window are recognized as departing rather than remaining stationary. Table 3.3 consolidates the complete six-dimensional feature vector specification.
+where $t_{\text{end}}$ denotes $t_{\text{trig}} + W \times \text{fps}$ (or the final frame of the track if terminated early). This feature ensures that candidates that resume transit during the monitoring window are recognized as departing rather than remaining stationary. Table 3.2 consolidates the complete six-dimensional feature vector specification.
 
 | Feature                             | Symbol            | Type    | Range        | Phase      |
 | ----------------------------------- | ----------------- | ------- | ------------ | ---------- |
@@ -173,23 +162,23 @@ where $t_{\text{end}}$ denotes $t_{\text{trig}} + W \times \text{fps}$ (or the f
 | Ratio Change                        | $\Delta R$        | Float   | [-1.0, +1.0] | Monitoring |
 | Candidate Post-Trigger Displacement | $d_{\text{cand}}$ | Float   | $\geq 0$ m   | Monitoring |
 
-_Table 3.3. Feature vector specification._
+_Table 3.2. Feature vector specification._
 
 Regarding feature completeness, the vector intentionally omits static spatial attributes (such as distance to curb or lane markings), adhering strictly to lightweight edge-tracking principles without requiring computationally expensive semantic segmentation networks. Each feature represents an independent mathematical derivation: $R$ derives from binarized states, $C$ from local stream density, $\bar{d}$ from space-mean displacements, $\sigma_d$ from kinematic variance, $\Delta R$ from temporal queue dissipation, and $d_{\text{cand}}$ from candidate-specific trajectory continuity. This formulation avoids collinearity while capturing both microscopic candidate behavior and macroscopic stream context [XGBoost: A Scalable Tree Boosting System https://doi.org/10.1145/2939672.2939785]. In the isolated edge case where $|\mathcal{S}(t_{\text{trig}})| = 0$, the classifier is bypassed and the event defaults to standard temporal threshold logic, which is logged separately from model evaluation.
 
-### 3.3.6 Violation Classification
+### Violation Classification
 
 The feature vector is processed by a gradient-boosted decision tree classifier, specifically XGBoost [XGBoost: A Scalable Tree Boosting System https://doi.org/10.1145/2939672.2939785], which outputs a binary prediction: 1 (violation) or 0 (non-violation).
 
 XGBoost constructs an additive ensemble of decision trees, where each successive tree is trained to correct the residual prediction errors of the preceding ensemble. At each node, the algorithm evaluates candidate split points across all input features and selects the split that maximizes the reduction in the regularized objective function. The split thresholds are computed from the training data distribution via gradient optimization, establishing data-driven decision boundaries rather than relying on heuristic cutoff values.
 
-The classifier receives only the six numeric features defined in Table 3.3. Event ID and Track ID are metadata identifiers retained by the system's orchestration layer for associating the classifier's output with the correct on-screen vehicle for flagging and logging. They are not passed to the classifier.
+The classifier receives only the six numeric features defined in Table 3.2. Event ID and Track ID are metadata identifiers retained by the system's orchestration layer for associating the classifier's output with the correct on-screen vehicle for flagging and logging. They are not passed to the classifier.
 
-The context-aware classifier operates under identifiable structural limitations. First, when only one surrounding vehicle is tracked at the trigger frame ($C = 1$), the Stationary Ratio $R$ degenerates to a binary value $\in \{0, 1\}$, the Mean Surrounding Displacement $\bar{d}$ reduces to a single observation, and the Surrounding Displacement Standard Deviation $\sigma_d$ is trivially zero. Under these conditions, the contextual features carry minimal discriminative information, and the classifier must rely primarily on $d_{\text{cand}}$ and $\Delta R$. The classifier's discrimination ability therefore degrades monotonically as $C$ decreases toward one. Second, an isolated legitimate stop, such as a lone vehicle yielding to a pedestrian during low-traffic periods, yields features identical to an illegally parked vehicle ($R = 0$, $\Delta R = 0$, $d_{\text{cand}} = 0$). Third, under extended gridlock lasting longer than the combined monitoring period ($T + W = 75$ seconds), no vehicles move during the window ($R = 1$, $\Delta R = 0$, $d_{\text{cand}} = 0$). In these scenarios, the spatiotemporal signatures of congestion and illegal parking become mathematically identical within the fixed temporal window. Fourth, on high-speed roads with rapid vehicle turnover, the $n$-frame tracking-history filter (Section 3.3.3) may exclude a large proportion of short-tracked vehicles from $\mathcal{S}(t)$, causing $C$ to undercount the actual traffic density. In extreme cases, this could produce artificially low $C$ values or trigger the zero-surrounding-vehicle fallback during what is actually moderate-density traffic with high turnover.
+The context-aware classifier operates under identifiable structural limitations. First, when only one surrounding vehicle is tracked at the trigger frame ($C = 1$), the Stationary Ratio $R$ degenerates to a binary value $\in \{0, 1\}$, the Mean Surrounding Displacement $\bar{d}$ reduces to a single observation, and the Surrounding Displacement Standard Deviation $\sigma_d$ is trivially zero. Under these conditions, the contextual features carry minimal discriminative information, and the classifier must rely primarily on $d_{\text{cand}}$ and $\Delta R$. The classifier's discrimination ability therefore degrades monotonically as $C$ decreases toward one. Second, an isolated legitimate stop, such as a lone vehicle yielding to a pedestrian during low-traffic periods, yields features identical to an illegally parked vehicle ($R = 0$, $\Delta R = 0$, $d_{\text{cand}} = 0$). Third, under extended gridlock lasting longer than the combined monitoring period ($T + W = 75$ seconds), no vehicles move during the window ($R = 1$, $\Delta R = 0$, $d_{\text{cand}} = 0$). In these scenarios, the spatiotemporal signatures of congestion and illegal parking become mathematically identical within the fixed temporal window. Fourth, on high-speed roads with rapid vehicle turnover, the $n$-frame tracking-history filter (detailed in the Coordinate Transformation and Displacement Computation section) may exclude a large proportion of short-tracked vehicles from $\mathcal{S}(t)$, causing $C$ to undercount the actual traffic density. In extreme cases, this could produce artificially low $C$ values or trigger the zero-surrounding-vehicle fallback during what is actually moderate-density traffic with high turnover.
 
-### 3.3.7 System Parameter Summary
+### System Parameter Summary
 
-Table 3.4 consolidates all fixed and empirically determined parameters in the proposed system.
+Table 3.3 consolidates all fixed and empirically determined parameters in the proposed system.
 
 | Parameter                      | Symbol                | Value                  | Justification                                       |
 | ------------------------------ | --------------------- | ---------------------- | --------------------------------------------------- |
@@ -197,28 +186,26 @@ Table 3.4 consolidates all fixed and empirically determined parameters in the pr
 | Frame rate                     | fps                   | 30                     | Native recording rate; no downsampling              |
 | Temporal trigger threshold     | $T$                   | 60 s                   | Operational threshold distinguishing transient traffic pauses from sustained parking |
 | Lookback window                | $N$                   | 3 s (90 frames)        | Transportation standard for 1.4 m/s clearance [Field Studies of Pedestrian Walking Speed and Start-Up Time https://doi.org/10.1177/0361198196153800104] |
-| Stationary threshold           | $\varepsilon_s$       | Empirically determined | Depth-dependent noise calibration (Section 3.3.4)   |
-| Monitoring window              | $W$                   | 15 s                   | Upstream extraction parameter; sensitivity assessed in Section 3.5.6 |
+| Stationary threshold           | $\varepsilon_s$       | Empirically determined | Depth-dependent noise calibration (detailed in Restricted Zone and Event Trigger) |
+| Monitoring window              | $W$                   | 15 s                   | Upstream extraction parameter; sensitivity assessed in Parameter Sensitivity Analysis |
 | Detection confidence threshold | N/A                   | 0.25                   | Ultralytics YOLOv8 default [Ultralytics YOLOv8 https://github.com/ultralytics/ultralytics]                     |
 | IoU association threshold      | $\sigma_{\text{IoU}}$ | 0.5                    | Adopted from NMS threshold range [High-speed tracking-by-detection without using image information https://doi.org/10.1109/AVSS.2017.8078516], [Ultralytics YOLOv8 https://github.com/ultralytics/ultralytics]           |
 | Track confirmation window      | $n_{\text{init}}$     | 3 frames               | Empirical default; prevents single-frame false positives |
-| Track termination window       | $t_{\text{lost}}$     | 5 frames               | Bridges momentary misses; avoids ghost tracks (Section 3.3.2) |
+| Track termination window       | $t_{\text{lost}}$     | 5 frames               | Bridges momentary misses; avoids ghost tracks (detailed in Multi-Object Tracking) |
 
-_Table 3.4. Complete system parameter summary._
-
-[Figure 3.4 placeholder]
-
-_Figure 3.4. Complete system pipeline diagram._
+_Table 3.3. Complete system parameter summary._
 
 ---
 
-## 3.4 Ground Truth Annotation
+## Ground Truth Annotation
 
-### 3.4.1 Event-Level Annotation
+To train the supervised XGBoost classifier and quantitatively evaluate system performance, a reference ground-truth dataset must be established from the captured video recordings. This section defines the event-level ground truth annotation protocol, describes the recorded categorical and contextual attributes, and specifies the inter-annotator agreement procedure used to validate labeling reliability.
+
+### Event-Level Annotation
 
 Annotation is performed at the event level, not the frame level. The set of events to be annotated is determined by running the Vision Pipeline and Event Trigger stages on the recorded footage and collecting all generated trigger events.
 
-For each trigger event, the annotator reviews the video segment from 30 seconds before the trigger frame through the end of the monitoring window. Table 3.5 defines the ground truth annotation fields, where specific stop reasons are recorded exclusively for non-violation events.
+For each trigger event, the annotator reviews the video segment from 30 seconds before the trigger frame through the end of the monitoring window. Table 3.4 defines the ground truth annotation fields, where specific stop reasons are recorded exclusively for non-violation events.
 
 | Field       | Type        | Description                                              |
 | ----------- | ----------- | -------------------------------------------------------- |
@@ -228,11 +215,11 @@ For each trigger event, the annotator reviews the video segment from 30 seconds 
 | Stop reason | Categorical | Congestion / Pedestrian yielding / Loading / Other / N/A |
 | Notes       | Free text   | Annotator remarks on ambiguous cases                     |
 
-_Table 3.5. Ground truth annotation fields._
+_Table 3.4. Ground truth annotation fields._
 
 An event is formally annotated as a Violation when a candidate vehicle maintains a stationary dwell status within the restricted zone throughout the observation window in the absence of any observable external traffic impediment, such as simultaneous surrounding queueing, active pedestrian right-of-way crossing, or authorized curb operations. This protocol aligns with the statutory legal framing of Section 46 of Republic Act No. 4136, wherein stationary vehicular presence within designated prohibited zones (such as intersections, pedestrian crossings, or designated curb areas) establishes a prima facie infraction unless observable operational necessity is documented.
 
-### 3.4.2 Inter-Annotator Agreement
+### Inter-Annotator Agreement
 
 A randomly selected 20% subset of triggered events will be independently annotated by a second annotator. Agreement on the binary label will be measured using Cohen's kappa:
 
@@ -242,17 +229,19 @@ where $p_o$ is the observed agreement and $p_e$ is the expected agreement by cha
 
 ---
 
-## 3.5 Training and Evaluation Protocol
+## Experimental Setup and Model Evaluation
 
-### 3.5.1 Cross-Validation
+This section defines the experimental methodology used to train, tune, and validate the proposed spatiotemporal classification framework. It outlines the stratified cross-validation partitioning scheme, the nested grid search procedure for XGBoost hyperparameter optimization, and the performance metrics used for quantitative evaluation. In addition, it details the comparative evaluation protocol against an external single-frame detection baseline, feature ablation configurations, and parameter sensitivity analyses used to examine pipeline robustness.
+
+### Cross-Validation
 
 Due to the anticipated limited size of the event dataset (constrained by the number of qualifying trigger events in the recording period), a fixed train-test split risks high variance in performance estimates. The study utilizes stratified 5-fold cross-validation, following established machine learning evaluation standards for variance reduction and class balance preservation on small datasets [A Study of Cross-Validation and Bootstrap for Accuracy Estimation and Model Selection https://www.ijcai.org/Proceedings/95-2/Papers/016.pdf]. The annotated dataset is partitioned into five equal folds, stratified by label to ensure that each fold mirrors the overall class proportion. In each iteration, four folds serve as the training set and one fold as the held-out evaluation set. The process repeats five times, and metrics are reported as the mean ± standard deviation across folds [A Study of Cross-Validation and Bootstrap for Accuracy Estimation and Model Selection https://www.ijcai.org/Proceedings/95-2/Papers/016.pdf].
 
 Random fold assignment may place temporally adjacent events into different folds, potentially introducing optimistic bias due to correlated environmental conditions such as lighting or traffic density. This limitation is retained as the dataset size is insufficient to support temporal blocking without introducing unacceptable variance.
 
-### 3.5.2 Hyperparameter Tuning
+### Hyperparameter Tuning
 
-XGBoost hyperparameters are tuned via grid search using a nested cross-validation framework, with 3-fold cross-validation executed within each outer training fold. As established by Varma and Simon [Bias in error estimation when using cross-validation for model selection https://doi.org/10.1186/1471-2105-7-91], nesting the model selection and hyperparameter optimization loops within the training partition is essential to prevent data leakage and selection bias from artificially inflating performance estimates. The hyperparameter search space is defined in Table 3.6. The parameter configuration yielding the highest mean F1-score across inner cross-validation folds is selected to train the final model for each outer evaluation fold.
+XGBoost hyperparameters are tuned via grid search using a nested cross-validation framework, with 3-fold cross-validation executed within each outer training fold. As established by Varma and Simon [Bias in error estimation when using cross-validation for model selection https://doi.org/10.1186/1471-2105-7-91], nesting the model selection and hyperparameter optimization loops within the training partition is essential to prevent data leakage and selection bias from artificially inflating performance estimates. The hyperparameter search space is defined in Table 3.5. The parameter configuration yielding the highest mean F1-score across inner cross-validation folds is selected to train the final model for each outer evaluation fold.
 
 | Hyperparameter         | Search values  |
 | ---------------------- | -------------- |
@@ -261,13 +250,13 @@ XGBoost hyperparameters are tuned via grid search using a nested cross-validatio
 | Learning rate ($\eta$) | 0.01, 0.1, 0.3 |
 | Minimum child weight   | 1, 3, 5        |
 
-_Table 3.6. XGBoost hyperparameter search space._
+_Table 3.5. XGBoost hyperparameter search space._
 
 No feature scaling or normalization is applied, as gradient-boosted decision trees are invariant to monotonic feature transformations: split decisions are based on threshold comparisons over feature values, and the relative ordering of data points is preserved under any monotonic rescaling [XGBoost: A Scalable Tree Boosting System https://doi.org/10.1145/2939672.2939785].
 
-### 3.5.3 Evaluation Metrics
+### Evaluation Metrics
 
-Classification performance is evaluated using precision, recall, F1-score, and false positive rate (FPR), derived from standard binary confusion matrix formulations in automated detection and surveillance [An introduction to ROC analysis https://doi.org/10.1016/j.patrec.2005.10.010]. In this operational context, True Positives (TP) represent correctly flagged genuine violations, False Positives (FP) denote legitimate stops incorrectly flagged as violations, True Negatives (TN) denote correctly suppressed legitimate stops, and False Negatives (FN) represent genuine violations that the system failed to identify. Table 3.7 outlines the mathematical definitions of these metrics.
+Classification performance is evaluated using precision, recall, F1-score, and false positive rate (FPR), derived from standard binary confusion matrix formulations in automated detection and surveillance [An introduction to ROC analysis https://doi.org/10.1016/j.patrec.2005.10.010]. In this operational context, True Positives (TP) represent correctly flagged genuine violations, False Positives (FP) denote legitimate stops incorrectly flagged as violations, True Negatives (TN) denote correctly suppressed legitimate stops, and False Negatives (FN) represent genuine violations that the system failed to identify. Table 3.6 outlines the mathematical definitions of these metrics.
 
 | Metric              | Definition                                                                              |
 | ------------------- | --------------------------------------------------------------------------------------- |
@@ -276,43 +265,46 @@ Classification performance is evaluated using precision, recall, F1-score, and f
 | F1-Score            | $2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$ |
 | False Positive Rate | $\frac{FP}{FP + TN}$                                                                    |
 
-_Table 3.7. Evaluation metrics._
+_Table 3.6. Evaluation metrics._
 
 Metrics for the proposed method are reported as mean ± standard deviation across the five cross-validation folds. Precision, recall, and F1-score are reported for each class individually (violation and non-violation) to ensure that performance differences are not masked by class-level aggregation.
 
-### 3.5.4 Comparative Evaluation
+### Comparative Evaluation
 
-The proposed method will be compared against a reimplementation of the detection logic described by Abella and Catedrilla [Smart Surveillance of Illegal Parking and Littering Detection Using Yolo-Based Machine Learning Algorithms in the Municipality of Los Baños https://doi.org/10.1109/icaisg68699.2025.11452147]. Their system is a YOLOv8-based illegal parking detection framework that uses composite detection classes to identify violations at the frame level. The method performs frame-by-frame inference without multi-object tracking or temporal dwell-time logic; a violation is identified when a composite class representing the spatial co-occurrence of a vehicle, a human, and a no-parking sign is detected within a single frame. This architectural design makes the method fundamentally distinct from the proposed spatiotemporal classifier, and this distinction is central to the comparative hypothesis.
+The proposed method will be compared against a reimplementation of the detection logic described by Abella and Catedrilla [Smart Surveillance of Illegal Parking and Littering Detection Using Yolo-Based Machine Learning Algorithms in the Municipality of Los Baños https://doi.org/10.1109/icaisg68699.2025.11452147]. Their system is a YOLOv8-based illegal parking detection framework that relies on composite detection classes to identify violations at the frame level. The method performs frame-by-frame inference without multi-object tracking or temporal dwell-time logic; a violation is identified when a composite class representing the spatial co-occurrence of a vehicle, a human, and a no-parking sign is detected within a single frame. This architectural design makes the method fundamentally distinct from the proposed spatiotemporal classifier, and this distinction is central to the comparative hypothesis.
 
-To enable a fair and controlled comparison, the research team will reimplement Abella et al.'s composite-class detection logic and apply it to the same video footage used to evaluate the proposed method. Both methods will be tested under identical conditions, specifically, the same camera and recording setup, the same recording resolution and frame rate, the same YOLOv8 architecture version, and the same ground truth event annotations. This controlled same-data design ensures that any measured performance difference is attributable to the decision method itself rather than to differences in test conditions.
+To enable a fair and controlled evaluation, the research team will reimplement Abella et al.'s detection logic and evaluate both systems under identical experimental conditions:
+* **Shared Video Feed:** Both methods are evaluated on the exact same video footage recorded from the elevated camera setup at 1920 × 1080 resolution and 30 fps.
+* **Shared Detector Architecture:** Both methods utilize the same YOLOv8 model family and pretrained base weights.
+* **Shared Ground Truth:** Both methods are evaluated against the same event-level ground truth annotations.
 
-The reimplementation procedure meticulously adheres to Abella et al.'s published methodology. Training images are collected and annotated by the research team at the test site employing the described annotation format, specifically COCO-format bounding boxes. The reimplemented model is trained to recognize two distinct conceptual categories of classes. The foundational base classes consist of standard object detections, including cars, generic vehicles, motorcycles, persons, and no-parking signs. Concurrently, the model detects composite classes that function as the direct violation indicator, specifically identifying the spatial co-occurrence of a vehicle with a human, as well as the tripartite co-occurrence of a vehicle, a human, and a no-parking sign. In instances where Abella et al.'s original manuscript omits critical implementation details, such as the detection confidence threshold, the input image dimensions, or the exact data split ratio for training and validation, the research team applies standard empirical defaults. These parameters are documented explicitly to ensure complete reproducibility of the reimplemented baseline.
+The reimplemented baseline model is trained using COCO-format bounding boxes on test-site imagery to recognize two distinct conceptual categories of classes:
+* **Base Classes:** Standard object detections, including cars, generic vehicles, motorcycles, persons, and no-parking signs.
+* **Composite Classes:** Relational co-occurrence classes, specifically vehicle-human and vehicles-human-no-parking-sign.
 
-Because Abella et al.'s method produces frame-level detections while the proposed method produces event-level classifications, the reimplemented method's output must be aggregated to the event level to enable fair comparison. The observation window for each event spans from the trigger frame $t_{\text{trig}}$ through the end of the monitoring period $t_{\text{trig}} + W \times \text{fps}$. For each triggered event in the ground truth, the aggregation procedure checks whether the composite violation class (vehicles-human-no-parking-sign) is detected in any frame within that event's observation window. If at least one composite detection occurs within the window, the reimplemented method classifies the event as a violation. If no composite detection occurs in any frame within the window, the event is classified as a non-violation. Both methods are then evaluated against the same event-level ground truth labels using the metrics defined in Table 3.7.
+Where Abella et al.'s original manuscript omits critical implementation details (such as the detection confidence threshold, input image dimensions, or exact data split ratios), standard empirical defaults are documented and applied to ensure complete reproducibility.
 
-The evaluation scope for this comparison is strictly defined by the proposed method's trigger mechanism. Only vehicles that have been stationary in the restricted zone for at least $T = 60$ seconds generate a trigger event, and consequently, violations shorter than 60 seconds are excluded from the evaluation pool. The reimplemented Abella et al. method is evaluated only on this pre-filtered event pool. The comparison therefore measures discrimination ability within a subset of extended-duration stationary vehicles rather than end-to-end detection coverage across all traffic scenarios.
+Because Abella et al.'s method produces frame-level detections while the proposed method produces event-level classifications, the baseline detections must be temporally aggregated to the event level. For each ground truth event, the aggregation procedure operates as follows:
+1. **Define the Observation Window:** The evaluation window is set from the trigger frame $t_{\text{trig}}$ through the end of the monitoring period ($t_{\text{trig}} + W \times \text{fps}$).
+2. **Scan for Composite Detections:** The reimplemented detector evaluates every frame within this temporal window for the composite violation class (vehicles-human-no-parking-sign).
+3. **Assign Event Classification:** If at least one composite detection occurs within the window, the event is classified as a violation; if zero composite detections occur across all frames in the window, the event is classified as a non-violation.
+4. **Compute Performance Metrics:** Predictions from both systems are evaluated against identical ground truth labels using the metrics defined in Table 3.6.
 
-This comparison against Abella et al. is not a test of general algorithmic superiority, given the fundamental architectural differences between a tracked spatiotemporal classifier and an untracked single-frame detector. The specific hypothesis under test is that context-unaware spatial co-occurrence models exhibit elevated false positive rates under extended collective traffic conditions, and that the proposed spatiotemporal classifier reduces this specific failure mode. The primary outcome metric for this hypothesis is the false positive rate (FPR). Abella et al. reported lower precision for parking detection (74.67%) relative to littering detection (98.41%). Mathematical deduction applied to their reported figures, specifically 2,803 total detections and 509 combined false positives across both classes with no per-class breakdown, indicates that the majority of false positives originate from the parking class. This is a deduction made by applying arithmetic to Abella et al.'s own disclosed numbers and is not a conclusion stated in their paper. The reimplementation tests whether these parking-class false positives are attributable to collective traffic stops, which the proposed spatiotemporal classifier is designed to suppress.
+The evaluation scope for this comparison is strictly governed by the proposed method's trigger mechanism. Only vehicles that remain stationary in the restricted zone for at least $T = 60$ seconds generate an evaluation event; transient stoppages and short-duration violations under 60 seconds are excluded from the test pool. The reimplemented Abella et al. method is evaluated exclusively on this pre-filtered event pool. Consequently, this experiment measures discrimination accuracy within extended-duration stationary scenarios rather than general detection coverage across all traffic events.
 
-A methodological distinction exists in the violation definitions used by the two approaches, and this distinction is retained even though both methods are evaluated on the same dataset under identical test conditions. Abella et al. define a violation as the spatial co-occurrence of specific object classes within a single frame, with no temporal duration requirement. The proposed method, by contrast, defines a violation as a vehicle that remains stationary within a legally grounded restricted zone for at least 60 seconds without an observable external cause for the stop. This difference in what constitutes a detectable violation is inherent to the respective architectures and cannot be eliminated by testing on shared data. This distinction will be explicitly discussed when interpreting comparative results in Chapter 4.
+This comparison is not intended as a test of general algorithmic superiority, given the fundamental architectural differences between an untracked single-frame detector and a tracked spatiotemporal classifier. The specific hypothesis under test is that context-unaware spatial co-occurrence models exhibit elevated false positive rates under extended collective traffic stops, and that the proposed spatiotemporal classifier significantly reduces this specific failure mode. The primary outcome metric for this hypothesis is the false positive rate (FPR). Abella et al. reported lower precision for parking detection (74.67%) relative to littering detection (98.41%). Mathematical deduction applied to their reported figures, specifically 2,803 total detections and 509 combined false positives across both classes with no per-class breakdown, indicates that the majority of false positives originate from the parking class. This is a deduction made by applying arithmetic to Abella et al.'s own disclosed numbers and is not a conclusion stated in their paper. The reimplementation tests whether these parking-class false positives are attributable to collective traffic stops, which the proposed spatiotemporal classifier is designed to suppress.
 
-### 3.5.5 Feature Importance and Ablation
+Finally, a fundamental distinction exists in the violation definitions used by the two approaches, and this distinction is retained even though both methods are evaluated on the same dataset under identical test conditions. Abella et al. define a violation as the spatial co-occurrence of specific object classes within a single frame, with no temporal duration requirement. The proposed method, by contrast, defines a violation as a vehicle that remains stationary within a legally grounded restricted zone for at least 60 seconds without an observable external cause for the stop. This difference in what constitutes a detectable violation is inherent to the respective architectures and cannot be eliminated by testing on shared data; it will be explicitly discussed when interpreting comparative results in Chapter 4.
+
+### Feature Importance and Ablation
 
 To interpret the trained XGBoost model, feature importance is quantified using the average gain, which calculates the mean improvement in the regularized objective function contributed by a specific feature across all trees in which it appears [XGBoost: A Scalable Tree Boosting System https://doi.org/10.1145/2939672.2939785]. These importance scores are subsequently reported in the experimental results to provide interpretability regarding which aspects of the temporal traffic context the classifier relies on most heavily to form its decision boundaries.
 
-An ablation study evaluates the marginal contribution of individual feature subsets. As specified in Table 3.8, the classifier is retrained and evaluated under snapshot-only, monitoring-only, and full feature configurations using the identical stratified 5-fold cross-validation protocol.
+An ablation study evaluates the marginal contribution of individual feature subsets by retraining and evaluating the classifier under three configurations using the identical stratified 5-fold cross-validation protocol: snapshot features only ($R, C, \bar{d}, \sigma_d$), monitoring features only ($\Delta R, d_{\text{cand}}$), and the full six-dimensional feature vector.
 
-| Configuration            | Features                                                                 |
-| ------------------------ | ------------------------------------------------------------------------ |
-| Snapshot features only   | $R, \; C, \; \bar{d}, \; \sigma_d$                                       |
-| Monitoring features only | $\Delta R, \; d_{\text{cand}}$                                           |
-| Full feature vector      | All six features                                                         |
+### Parameter Sensitivity Analysis
 
-_Table 3.8. Ablation study configurations._
-
-### 3.5.6 Parameter Sensitivity Analysis
-
-A parameter sensitivity analysis examines the robustness of the proposed pipeline to variations in key extraction hyperparameters [Global Sensitivity Analysis: The Primer https://doi.org/10.1002/9780470725184]. Following standard sensitivity analysis principles [Global Sensitivity Analysis: The Primer https://doi.org/10.1002/9780470725184], a one-at-a-time (OAT) parameter perturbation is conducted, wherein the full pipeline (feature extraction, classifier training, and 5-fold cross-validation) is re-executed with the modified parameter value while holding all other parameters fixed at their calibrated defaults.
+A parameter sensitivity analysis examines the robustness of the proposed pipeline to variations in key extraction hyperparameters [Global Sensitivity Analysis: The Primer https://doi.org/10.1002/9780470725184]. Following standard sensitivity analysis principles [Global Sensitivity Analysis: The Primer https://doi.org/10.1002/9780470725184], a one-at-a-time (OAT) parameter perturbation is conducted across the test values outlined in Table 3.7, wherein the full pipeline (feature extraction, classifier training, and 5-fold cross-validation) is re-executed with the modified parameter value while holding all other parameters fixed at their calibrated defaults.
 
 | Parameter                              | Default            | Test values                          |
 | -------------------------------------- | ------------------ | ------------------------------------ |
@@ -320,7 +312,4 @@ A parameter sensitivity analysis examines the robustness of the proposed pipelin
 | Stationary threshold ($\varepsilon_s$) | 1.5× noise ceiling | 0.5×, 1.0×, 1.5×, 2.0× noise ceiling |
 | Lookback window ($N$)                  | 3 s                | 1, 2, 3, 5 s                         |
 
-_Table 3.9. Parameter sensitivity analysis configurations._
-
-
-
+_Table 3.7. Parameter sensitivity analysis configurations._
