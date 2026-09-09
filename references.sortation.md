@@ -83,7 +83,7 @@ Criteria: Systems that evaluate the dynamic movement or relative velocity of sur
 ## Chapter 1 and Chapter 3 Foundational Citations
 These papers do not propose an illegal parking computer vision violation algorithm, but serve as primary domain or methodological citations:
 
-### Chapter 1: Problem Context and Municipal Policy
+### General Illegal Parking Information
 - Owais et al. (2025) [A Framework for Establishing an Automated Traffic Violation Detection System]: Surveillance planning and CCTV placement in urban road networks.
 - Ho et al. (2019) [A Computer Vision-Based Roadside Occupation Surveillance System for Intelligent Transport in Smart Cities]: Smart city roadside occupancy surveillance.
 - Bandola et al. (2025) [Assessing the Impact of "Parking Ng Bayan" in Regulating Vehicle Parking in Public Areas of Valenzuela City]: Philippine local municipal parking policy and impact.
