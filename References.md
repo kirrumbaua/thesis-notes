@@ -1,5 +1,10 @@
 # References
 
+## PART 1: ORIGINAL DEFENDED LITERATURE REVIEW REFERENCES ([1] - [52])
+
+> **Note on Original References:**  
+> References [1] through [52] represent the core contemporary literature reviewed and defended in the initial manuscript, spanning 2011 through 2026 across spatial detection, multi-object tracking, road-context analysis, and roadside surveillance. These entries are preserved in their original ordering and numbering.
+
 [1] Miguel Paulo C. Abella and Gene Marck B. Catedrilla. 2025. Smart Surveillance of Illegal Parking and Littering Detection Using Yolo-Based Machine Learning Algorithms in the Municipality of Los Baños. 2025 International Conference on Artificial Intelligence Security and Governance (ICAISG) (December 2025), 61-64. DOI:https://doi.org/10.1109/icaisg68699.2025.11452147
 
 [2] Antonio Albiol, Laura Sanchis, Alberto Albiol, and José M. Mossi. 2011. Detection of Parked Vehicles Using Spatiotemporal Maps. IEEE Transactions on Intelligent Transportation Systems 12, 4 (December 2011), 1277-1291. DOI:https://doi.org/10.1109/tits.2011.2156791
@@ -104,25 +109,70 @@
 
 [52] Yi-Quan Zhou and Chi-Yi Tsai. 2025. Development and Validation of an Instance segmentation-based System for Illegal Parking Violation Detection. IET Conference Proceedings 2025, 15 (August 2025), 502-506. DOI:https://doi.org/10.1049/icp.2025.2602
 
-## ADDITIONAL METHODOLOGY & FOUNDATIONAL CITATIONS ([53]–[61])
+## PART 2: METHODOLOGICAL AND FOUNDATIONAL CITATIONS ([53] - [67])
 
-> **Note on Foundational & Methodological Citations:**  
-> While the primary literature review ([1]–[52]) focuses on contemporary computer vision and ITS frameworks (2011–2026), citations [53]–[61] incorporate essential mathematical, physical, and statistical foundations. These classical and canonical references ([53] Lighthill & Whitham 1955 for Kinematic Wave Theory; [56] Zhang 2000 for Planar Camera Calibration; [59] Bohannon 1997 for Human Walking Speed Baselines; [60] Chen & Guestrin 2016 for XGBoost; and [61] Landis & Koch 1977 for Categorical Observer Agreement) are explicitly included to anchor system parameters, coordinate transformations, traffic flow modeling, and evaluation metrics in empirically proven, peer-reviewed scientific standards rather than arbitrary heuristics.
+> **Note on Foundational and Methodological Citations:**  
+> Citations [53] through [67] incorporate essential mathematical, physical, and statistical foundations utilized in Chapter 3 methodology. These classical and canonical references ([53] Lighthill & Whitham 1955 for Kinematic Wave Theory; [54] Zhang et al. 2022 for ByteTrack multi-object tracking; [55] Bradski 2000 for OpenCV; [56] Zhang 2000 for Planar Camera Calibration; [57] Jocher et al. 2023 for Ultralytics YOLOv8; [58] Lin et al. 2014 for Microsoft COCO; [59] Knoblauch et al. 1996 for Walking Speed Baselines; [60] Chen & Guestrin 2016 for XGBoost; [61] Landis & Koch 1977 for Categorical Observer Agreement; [62] - [65] for cross-validation, hyperparameter tuning, and sensitivity protocols; and [66] - [67] Wardrop 1952 and Treiber & Kesting 2013 for traffic flow dynamics) anchor system parameters, coordinate transformations, traffic flow modeling, and evaluation metrics in empirically proven, peer-reviewed scientific standards rather than arbitrary heuristics.
 
 [53] M. J. Lighthill and G. B. Whitham. 1955. On kinematic waves. II. A theory of traffic flow on long crowded roads. Proceedings of the Royal Society of London. Series A. Mathematical and Physical Sciences 229, 1178 (May 1955), 317-345. DOI:https://doi.org/10.1098/rspa.1955.0089
 
-[54] E. Bochinski, V. Eiselein, and T. Sikora. 2017. High-speed tracking-by-detection without using image information. In 14th IEEE International Conference on Advanced Video and Signal Based Surveillance (AVSS), 1-6. DOI:https://doi.org/10.1109/AVSS.2017.8078516
+[54] Yifu Zhang, Peize Sun, Yi Jiang, Dongdong Yu, Fucheng Weng, Zehuan Yuan, Ping Luo, Wenyu Liu, and Xinggang Wang. 2022. ByteTrack: Multi-Object Tracking by Associating Every Detection Box. In Computer Vision - ECCV 2022, 1-21. DOI:https://doi.org/10.1007/978-3-031-20047-2_1
 
-[55] Gary Bradski. 2000. The OpenCV Library. Dr. Dobb's Journal of Software Tools.
+[55] Gary Bradski. 2000. The OpenCV Library. Dr. Dobb's Journal of Software Tools 25, 11 (November 2000), 120-125.
 
 [56] Zhengyou Zhang. 2000. A flexible new technique for camera calibration. IEEE Transactions on Pattern Analysis and Machine Intelligence 22, 11 (November 2000), 1330-1334. DOI:https://doi.org/10.1109/34.888718
 
-[57] Glenn Jocher, Ayush Chaurasia, and Jing Qiu. 2023. YOLO by Ultralytics. Retrieved from https://github.com/ultralytics/ultralytics
+[57] Glenn Jocher, Ayush Chaurasia, and Jing Qiu. 2023. Ultralytics YOLOv8. GitHub repository. Retrieved from https://github.com/ultralytics/ultralytics
 
-[58] Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, Piotr Dollár, and C. Lawrence Zitnick. 2014. Microsoft COCO: Common Objects in Context. In European Conference on Computer Vision (ECCV) 2014, 740-755. DOI:https://doi.org/10.1007/978-3-319-10602-1_48
+[58] Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, Piotr Dollar, and C. Lawrence Zitnick. 2014. Microsoft COCO: Common Objects in Context. In European Conference on Computer Vision (ECCV) 2014, 740-755. DOI:https://doi.org/10.1007/978-3-319-10602-1_48
 
-[59] Richard W. Bohannon. 1997. Comfortable and maximum walking speed of adults aged 20-79 years: reference values and determinants. Age and Ageing 26, 1 (January 1997), 15-19. DOI:https://doi.org/10.1093/ageing/26.1.15
+[59] Richard L. Knoblauch, Martin T. Pietrucha, and Marsha Nitzburg. 1996. Field Studies of Pedestrian Walking Speed and Start-Up Time. Transportation Research Record: Journal of the Transportation Research Board 1538, 1 (January 1996), 27-38. DOI:https://doi.org/10.1177/0361198196153800104
 
 [60] Tianqi Chen and Carlos Guestrin. 2016. XGBoost: A Scalable Tree Boosting System. In Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (August 2016), 785-794. DOI:https://doi.org/10.1145/2939672.2939785
 
 [61] J. Richard Landis and Gary G. Koch. 1977. The Measurement of Observer Agreement for Categorical Data. Biometrics 33, 1 (March 1977), 159-174. DOI:https://doi.org/10.2307/2529310
+
+[62] Ron Kohavi. 1995. A Study of Cross-Validation and Bootstrap for Accuracy Estimation and Model Selection. In Proceedings of the 14th International Joint Conference on Artificial Intelligence (IJCAI) 2, 1137-1143.
+
+[63] Sudhir Varma and Richard Simon. 2006. Bias in error estimation when using cross-validation for model selection. BMC Bioinformatics 7, 1 (February 2006), 91. DOI:https://doi.org/10.1186/1471-2105-7-91
+
+[64] Tom Fawcett. 2006. An introduction to ROC analysis. Pattern Recognition Letters 27, 8 (June 2006), 861-874. DOI:https://doi.org/10.1016/j.patrec.2005.10.010
+
+[65] Andrea Saltelli, Marco Ratto, Terry Andres, Francesca Campolongo, Jessica Cariboni, Debora Gatelli, Michaela Saisana, and Stefano Tarantola. 2008. Global Sensitivity Analysis: The Primer. John Wiley & Sons, Ltd, Chichester, UK. DOI:https://doi.org/10.1002/9780470725184
+
+[66] J. G. Wardrop. 1952. Some theoretical aspects of road traffic research. Proceedings of the Institution of Civil Engineers 1, 3 (June 1952), 325-362. DOI:https://doi.org/10.1680/ipeds.1952.11259
+
+[67] Martin Treiber and Arne Kesting. 2013. Traffic Flow Dynamics: Data, Models and Simulation. Springer-Verlag, Berlin Heidelberg. DOI:https://doi.org/10.1007/978-3-642-32460-4
+
+## PART 3: NEW RESEARCH LITERATURE ADDITIONS (2019 - 2026) ([68] - [79])
+
+> **Note on New Research Literature Additions:**  
+> References [68] through [79] represent the twelve newly acquired research papers (2019 - 2026) identified during recent literature updates. These papers provide up-to-date benchmarks across two categories: (1) Hybrid CV + ML / Statistical architectures ([68] - [71]) that decouple computer vision feature extraction from downstream tabular or sequential classifiers, directly corroborating the proposed framework architecture; and (2) Recent domain literature ([72] - [79]) covering contemporary edge-AI deployments, modern YOLO backbones (YOLOv8, YOLOv11, YOLOv12), and spatio-temporal boundary evaluations.
+
+### Subsection A: Hybrid Computer Vision and Machine Learning / Statistical Architectures ([68] - [71])
+
+[68] David R. McAllister, Jingwei Liu, Catherine M. Doyle, Francois L. Moreau, and Hannah K. Patel. 2025. Hierarchical Deep Learning Architectures for Multiclass Violation Detection in Urban Surveillance Systems. ESS Open Archive (October 2025). DOI:https://doi.org/10.22541/essoar.172935293.18291024/v1
+
+[69] C. Saravanan, P. Pavithra, B. Sandhiya, A. Suganthan, K. Suseendran, and K. Gopalakrishnan. 2025. Hybrid Parking Violation Detection System Using CNN with Gradient Boosting. In 2025 10th International Conference on Communication and Electronics Systems (ICCES) (October 2025). DOI:https://doi.org/10.1109/icces67310.2025
+
+[70] Zakaria Charouh, Amal Ezzouhri, Mounir Ghogho, and Zouhair Guennoun. 2022. Video Analysis and Rule-Based Reasoning for Driving Maneuver Classification at Intersections. IEEE Access 10, (April 2022), 45102-45111. DOI:https://doi.org/10.1109/ACCESS.2022.3169140
+
+[71] Akihiro Matsuda, Tomokazu Matsui, Yuki Matsuda, Hirohiko Suwa, and Keiichi Yasumoto. 2021. A System for Real-time On-street Parking Detection and Visualization on an Edge Device. In 2021 IEEE International Conference on Pervasive Computing and Communications Workshops and other Affiliated Events (PerCom Workshops) (March 2021), 227-232. DOI:https://doi.org/10.1109/PerComWorkshops51409.2021.9431076
+
+### Subsection B: Recent Domain and Contemporary Framework Additions ([72] - [79])
+
+[72] Hao Chen, Yao Li, Yong Jia, Guangle Yao, and Ruipeng Zhu. 2026. RKF-YOLO: A Lightweight Dual-Task Model for Illegal Parking Detection and License Plate Recognition on Edge Devices. Electronics 15, 12 (June 2026), 2638. DOI:https://doi.org/10.3390/electronics15122638
+
+[73] Muh Fajrin Bakri, Shahnaz Tasha Kurnia, Muhammad Fajar B, Andi Baso Kaswar, Dyah Darma Andayani, Fhatiah Adiba, Sanatang, and Syahrul. 2026. Motorcycle Parking Violation Detection Using YOLOv12 Segmentation and ROI-Guided Orientation Analysis. Proceedings of Engineering and Technology Innovation (PETI) (March 2026).
+
+[74] X. Gao, P. M. Birch, R. C. D. Young, and C. R. Chatwin. 2019. Illegally Parked Vehicle Detection using Deep Learning and Key-point Tracking. University of Sussex (2019).
+
+[75] Palakkumar B. Bhatt and Dipesh Kamdar. 2026. Wrong Side Vehicle Detection and Illegal Parking Detection using the Centroid Method and YOLOv8. SSRG International Journal of Electronics and Communication Engineering (IJECE) (June 2026).
+
+[76] Derick Hosmani, Yuvraj Pulled, and Om Kurale. 2025. A Deep Learning-Based Framework for Real-Time Illegal Parking Detection Using YOLOv5. International Journal of Creative Research Thoughts (IJCRT) (2025).
+
+[77] Haiyan Zhang, Ao Zhang, Chao Tian, Yilin Liu, Jibin Wang, Zhiwen Zhuang, Guxue Gao, and Yuanyuan Wang. 2026. A lightweight multiscale network and segmentation collaborative method for detecting illegal parking on tactile paving. Applied Soft Computing 203, (July 2026), 115967.
+
+[78] Kang Tang, Yu Sun, and Xiaoyang Zhong. 2024. Real-time Detection of Illegally Parked Vehicles in Roadside Parking Areas Based on Intelligent Video Terminals. In Proceedings of the 2024 International Conference on Image Processing, Intelligent Control and Computer Engineering (IPICE '24) (October 2024), 273-278. DOI:https://doi.org/10.1145/3691016.3691066
+
+[79] Zhengcong Yin, Haoyi Xiong, Xun Zhou, Daniel W. Goldberg, Dave Bennett, and Chong Zhang. 2019. A Deep Learning based Illegal Parking Detection Platform. In Proceedings of the 3rd ACM SIGSPATIAL International Workshop on AI for Geographic Information Systems (GeoAI '19) (November 2019), 1-4. DOI:https://doi.org/10.1145/3356471.3365233
